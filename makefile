@@ -22,7 +22,11 @@ $(BINDIR)/$(TARGET): $(OBJ)
 $(OBJ) : $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) $(INCDIR) -o $@ -c $< $(CFLAGS)
 
-.PHONY: clean mrproper dir
+.PHONY: clean mrproper dir run
+
+run:
+	./$(BINDIR)/$(TARGET)
+
 dir:
 	mkdir $(OBJDIR)
 	mkdir $(BINDIR)

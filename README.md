@@ -14,30 +14,27 @@ Ce projet est réalisé dans le cadre de notre M2 Algorithmique et modélisation
 
 [latex rapport](https://www.overleaf.com/9143591999bkqtcxgnwvfz#696441)
 
-## Structure
+## Structure du projet
 
-M2AmisProjet/
-│
-├── bin/
-│   └── graphCycleMol.exe  # L'exécutable généré
-│
-├── include/
-│   └── (fichiers d'en-tête .h)  # Fichiers d'en-tête pour le projet en C
-│
-├── obj/
-│   └── (fichiers objets .o)  # Fichiers objets générés lors de la compilation
-│
-├── data/
-│   └── (Données de la base de données)  # Fichiers de molécules parsés
-│
-├── src/
-│   └── (fichiers source .c)  # Fichiers source pour le projet en C
-│
-├── .gitignore  # Liste des fichiers/dossiers à ignorer lors du suivi par Git
-├── Makefile    # Fichier de configuration pour la construction du projet
-└── script.py   # Script Python pour récupérer des données de la base de données
+Ce projet suit une structure de dossier organisée pour une meilleure gestion et maintenabilité. Voici une explication des différents dossiers :
 
+- **bin/** : Contient l'exécutable généré après la compilation du projet.
 
+- **include/** : Les fichiers d'en-tête (.h) nécessaires pour le projet en C sont placés ici. Ces fichiers définissent les interfaces des fonctions et structures utilisées dans le projet.
+
+- **obj/** : Les fichiers objets (.o) générés lors de la compilation sont stockés ici. Ces fichiers sont les résultats intermédiaires de la compilation des fichiers source.
+
+- **data/** : Ce dossier contient les fichiers de molécules chargé depuis la base de données.
+
+- **src/** : Les fichiers source (.c) pour le projet en C sont placés ici. C'est là que vous écrivez le code principal de votre projet.
+
+- **.gitignore** : Un fichier utilisé pour spécifier les fichiers ou dossiers que Git doit ignorer lors du suivi des modifications. Cela inclut généralement les fichiers objets, l'exécutable et d'autres fichiers générés automatiquement.
+
+- **Makefile** : Le fichier de configuration pour la construction du projet.
+
+- **script.py** : Script Python pour récupérer des données de la base de données.
+
+Cette structure de dossier organisée aide à maintenir le projet propre et bien organisé.
 
 ## Compilation
 

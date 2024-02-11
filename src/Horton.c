@@ -1,14 +1,8 @@
 #include "Horton.h"
+#include "TriFusion.h"
 
-
-typedef struct {
-    int source;
-    int* parents;
-    int poids; 
-} SetCycle;
-
-SetCycle TransfoEnCycle(int v, int x, int y, int chemins[], int parents[], int graph[V][V]){
-    SetCycle cycle;
+Cycle TransfoEnCycle(int v, int x, int y, int chemins[], int parents[], int graph[V][V]){
+    Cycle cycle;
     int* sommets = (int*)malloc(V * sizeof(int));
     int i = 1;
     sommets[0] = y;
@@ -25,18 +19,18 @@ SetCycle TransfoEnCycle(int v, int x, int y, int chemins[], int parents[], int g
     }
     cycle.source = v;
     cycle.parents = sommets;
-    cycle.poids = chemins[x] + chemins[y] + graph[x][y];
+    cycle.taille = i;
     free(sommets);
 
     return cycle;
 }
 
-SetCycle Horton(int graph[V][V]){
+Cycle Horton(int graph[V][V]){
     int* chemins = (int*)malloc(V * sizeof(int));
     int* parents = (int*)malloc(V * sizeof(int)); 
     int v = 0;
     int i = 0;
-    SetCycle sets[V];
+    Cycle sets[V];
     for (v = 0; v < V; v ++){
         dijkstra(graph, v, chemins, parents);
         for (int x = 0; x < V; x++) {
@@ -50,5 +44,6 @@ SetCycle Horton(int graph[V][V]){
     }
     free(chemins);
     free(parents);
+    triFusion(sets, i);
     return sets[0];// on est censé renvoyé le plus petit cycle mais je n'ai pas encore implémenté le tri
 }

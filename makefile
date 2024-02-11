@@ -37,4 +37,17 @@ clean:
 	ls
 
 mrproper: clean
-	rm -rf results
+	rm -rf data
+
+LADIR=M2AmisProjet_GroupeB
+zip:
+	rm -rf ${LADIR}
+	mkdir ${LADIR}
+	cp -r $(SRCDIR) $(LADIR)
+	cp -r include $(LADIR)
+	cp makefile ${LADIR}
+#	cp Compte_Rendu.pdf ${LADIR}
+	rm -f ${LADIR}.zip
+	zip -r ${LADIR}.zip ${LADIR}
+	rm -rf ${LADIR}
+	ls -l

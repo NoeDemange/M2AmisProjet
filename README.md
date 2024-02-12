@@ -10,7 +10,10 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 Ce projet est réalisé dans le cadre de notre M2 Algorithmique et modélisation à l'interface des sciences (AMIS). L'objectif est de comparer des molécules issues d'une base de données par comparaison de leur graphes des cycles.
 
 ## Rapport et présentation
-[latex présentation](https://www.overleaf.com/9936189727ddqhdmmvxmqq#957509)
+
+[latex présentation](https://www.overleaf.com/4279531282ghsdfmdxbmqv#2be995)
+
+[latex ancienne présentation](https://www.overleaf.com/9936189727ddqhdmmvxmqq#957509)
 
 [latex rapport](https://www.overleaf.com/9143591999bkqtcxgnwvfz#696441)
 
@@ -45,6 +48,11 @@ make
 
 ## Utilisation
 
+Pour charger les molécules depuis la base de données Chebi.
+```sh
+make data
+```
+
 <!--### Démo
 Pour lancer une démo sur le substrat adénosine :
 ```sh
@@ -53,6 +61,9 @@ make demo
 
 ### Exécution
 Pour exécuter le programme entrez :
+```sh
+make run
+```
 <!--```sh
 ./bin/cageMol.exe -i [fichier_substrat.xyz]
 ```

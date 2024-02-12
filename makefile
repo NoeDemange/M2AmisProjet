@@ -22,10 +22,13 @@ $(BINDIR)/$(TARGET): $(OBJ)
 $(OBJ) : $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) $(INCDIR) -o $@ -c $< $(CFLAGS)
 
-.PHONY: clean mrproper dir run
+.PHONY: clean mrproper dir run data
 
 run:
 	./$(BINDIR)/$(TARGET)
+
+data:
+	python3 chebi_molecule_loader.py
 
 dir:
 	mkdir $(OBJDIR)

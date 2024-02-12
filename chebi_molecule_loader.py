@@ -1,0 +1,79 @@
+import urllib.request
+import gzip
+import shutil
+import os
+
+# Vérifier si la bibliothèque RDKit est disponible
+try:
+    from rdkit import Chem
+except ImportError:
+    # Si la bibliothèque n'est pas disponible, télécharger et installer
+    print("Téléchargement de la bibliothèque RDKit...")
+    os.system("pip install rdkit")
+    from rdkit import Chem
+
+
+url = 'https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_lite_3star.sdf.gz'
+downloaded_file_name = 'ChEBI_lite_3star.sdf.gz'
+urllib.request.urlretrieve(url, downloaded_file_name)
+unzipped_file_name = 'ChEBI_lite_3star.sdf'
+
+with gzip.open(downloaded_file_name, 'rb') as f_in, open(unzipped_file_name, 'wb') as f_out:
+    shutil.copyfileobj(f_in, f_out)
+
+os.remove(downloaded_file_name)
+
+sdf_supplier = Chem.SDMolSupplier(unzipped_file_name)
+output_directory = 'data'
+os.makedirs(output_directory, exist_ok=True)
+
+# Fonction pour supprimer les atomes ayant moins de 2 liaisons
+'''def remove_single_bond_atoms(mol):
+    atoms_to_remove = [1]
+    while len(atoms_to_remove) > 0:
+        atoms_to_remove = []
+        for atom in mol.GetAtoms():
+            if atom.GetDegree() <= 1:  # Si l'atome a moins de 2 liaisons
+                atoms_to_remove.append(atom.GetIdx())
+        # Suppression des atomes de la molécule
+        atoms_to_remove.sort(reverse=True)  # Trie de manière décroissante pour éviter les problèmes d'index
+        # Convertir la molécule en EditableMol pour permettre des modifications
+        editable_mol = Chem.EditableMol(mol)
+        for atom_idx in atoms_to_remove:
+            editable_mol.RemoveAtom(atom_idx)  # Supprimer l'atome de la molécule
+        mol = editable_mol.GetMol()
+    
+    return mol'''
+
+for i, mol in enumerate(sdf_supplier):
+    if mol is not None:
+        ring_info = mol.GetRingInfo()
+        
+        if ring_info.NumRings() > 0:
+
+            # Suppression des atomes ayant moins de 2 liaisons
+            #mol = remove_single_bond_atoms(mol)
+
+            chebi_id = mol.GetProp("ChEBI ID")
+            chebi_id = chebi_id.replace(':', '_')
+            output_file_name = os.path.join(output_directory, f'{chebi_id}.txt')
+
+            with open(output_file_name, 'w') as output_file:
+
+                chebi_name = mol.GetProp("ChEBI Name")
+                output_file.write(f'Molecule Name: {chebi_name}\n\n')
+
+                atoms = mol.GetAtoms()
+                for atom in atoms:
+                    atom_symbol = atom.GetSymbol()
+                    output_file.write(atom_symbol)
+                
+                output_file.write("\n"+str(ring_info.NumRings())+"\n")
+                bonds = mol.GetBonds()
+                for bond in bonds:
+                    begin_atom_idx = bond.GetBeginAtom().GetIdx()
+                    end_atom_idx = bond.GetEndAtom().GetIdx()
+                    bond_type = bond.GetBondTypeAsDouble()
+                    output_file.write(str(begin_atom_idx) + " "+str(end_atom_idx)+" "+str(bond_type)+"\n")
+
+os.remove(unzipped_file_name)

@@ -47,7 +47,7 @@ output_directory = 'data'
 os.makedirs(output_directory, exist_ok=True)
 
 # Fonction pour supprimer les atomes ayant moins de 2 liaisons
-'''def remove_single_bond_atoms(mol):
+def remove_single_bond_atoms(mol):
     atoms_to_remove = [1]
     while len(atoms_to_remove) > 0:
         atoms_to_remove = []
@@ -62,7 +62,7 @@ os.makedirs(output_directory, exist_ok=True)
             editable_mol.RemoveAtom(atom_idx)  # Supprimer l'atome de la molécule
         mol = editable_mol.GetMol()
     
-    return mol'''
+    return mol
 
 for i, mol in enumerate(sdf_supplier):
     if mol is not None:
@@ -71,8 +71,9 @@ for i, mol in enumerate(sdf_supplier):
         if ring_info.NumRings() > 0:
 
             # Suppression des atomes ayant moins de 2 liaisons
-            #mol = remove_single_bond_atoms(mol)
+            mol = remove_single_bond_atoms(mol)
 
+            #if(mol.GetNumAtoms()>6):
             chebi_id = mol.GetProp("ChEBI ID")
             chebi_id = chebi_id.replace(':', '_')
             output_file_name = os.path.join(output_directory, f'{chebi_id}.txt')
@@ -82,8 +83,7 @@ for i, mol in enumerate(sdf_supplier):
                 chebi_name = mol.GetProp("ChEBI Name")
                 output_file.write(f'Molecule Name: {chebi_name}\n\n')
                 # Generate the transition matrix for the molecule
-                transition_matrix = get_transition_matrix(mol)
-
+                transition_matrix = get_transition_matrix(mol) #Chem.rdmolops.GetAdjacencyMatrix(mol)
                 # Write the matrix to the file
                 output_file.write(f"{len(transition_matrix)}\n")  # Write the size of the matrix
                 for row in transition_matrix:

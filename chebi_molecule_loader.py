@@ -62,18 +62,12 @@ for i, mol in enumerate(sdf_supplier):
 
                 chebi_name = mol.GetProp("ChEBI Name")
                 output_file.write(f'Molecule Name: {chebi_name}\n\n')
+                # Generate the transition matrix for the molecule
+                transition_matrix = get_transition_matrix(mol)
 
-                atoms = mol.GetAtoms()
-                for atom in atoms:
-                    atom_symbol = atom.GetSymbol()
-                    output_file.write(atom_symbol)
-                
-                output_file.write("\n"+str(ring_info.NumRings())+"\n")
-                bonds = mol.GetBonds()
-                for bond in bonds:
-                    begin_atom_idx = bond.GetBeginAtom().GetIdx()
-                    end_atom_idx = bond.GetEndAtom().GetIdx()
-                    bond_type = bond.GetBondTypeAsDouble()
-                    output_file.write(str(begin_atom_idx) + " "+str(end_atom_idx)+" "+str(bond_type)+"\n")
+                # Write the matrix to the file
+                output_file.write(f"{len(transition_matrix)}\n")  # Write the size of the matrix
+                for row in transition_matrix:
+                    output_file.write(' '.join(map(str, row)) + "\n")
 
 os.remove(unzipped_file_name)

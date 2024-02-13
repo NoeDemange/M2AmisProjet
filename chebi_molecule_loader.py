@@ -12,6 +12,25 @@ except ImportError:
     os.system("pip install rdkit")
     from rdkit import Chem
 
+def get_transition_matrix(mol):
+    """Generate the transition matrix for a molecule, ignoring hydrogen atoms."""
+    atoms = [atom for atom in mol.GetAtoms() if atom.GetAtomicNum() != 1]  # Exclude hydrogens
+    matrix_size = len(atoms)
+    transition_matrix = [[0] * matrix_size for _ in range(matrix_size)]
+
+    atom_index = {atom.GetIdx(): i for i, atom in enumerate(atoms)}  # Map from atom index to reduced index
+
+    for bond in mol.GetBonds():
+        begin_atom = bond.GetBeginAtom()
+        end_atom = bond.GetEndAtom()
+
+        if begin_atom.GetAtomicNum() != 1 and end_atom.GetAtomicNum() != 1:  # Exclude bonds involving hydrogen
+            begin_index = atom_index[begin_atom.GetIdx()]
+            end_index = atom_index[end_atom.GetIdx()]
+            transition_matrix[begin_index][end_index] = 1
+            transition_matrix[end_index][begin_index] = 1  # Assuming undirected graph for simplicity
+
+    return transition_matrix
 
 url = 'https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_lite_3star.sdf.gz'
 downloaded_file_name = 'ChEBI_lite_3star.sdf.gz'

@@ -25,6 +25,49 @@ Cycle TransfoEnCycle(int v, int x, int y, int chemins[], int parents[], int grap
     return cycle;
 }
 
+//Donne tous les arcs du graphes dans un tableau
+Edge* obtenirArcs(int graph[V][V], int* numArcs) {
+    Edge* edges = (Edge*)malloc(V * V * sizeof(Edge)); 
+    *numArcs = 0;
+
+    for (int i = 0; i < V; i++) {
+        for (int j = i + 1; j < V; j++) {
+            if (graph[i][j] != 0) {
+                edges[*numArcs].source = i;
+                edges[*numArcs].target = j;
+                edges[*numArcs].poids = graph[i][j];
+                (*numArcs)++;
+            }
+        }
+    }
+
+    return edges;
+}
+
+int** Marquage(Cycle* set,int nb_cycle,int graph[V][V]){
+    int nb_arcs;
+    Edge* edges = obtenirArcs(graph,&nb_arcs);
+    int** edgeMatrix = (int**)malloc(nb_cycle * sizeof(int*));
+
+    for (int z = 0; z < nb_cycle; z++) {
+        edgeMatrix[z] = (int*)calloc(nb_arcs, sizeof(int));
+    }
+
+
+    for (int i = 0; i < nb_cycle; i++) {
+        for (int j = 0; j+1 < set[i].taille; j++){
+            for (int x = 0; x < nb_arcs; x ++){
+                if(set[i].parents[j] == edges[x].source && set[i].parents[j+1] == edges[x].target){
+                    edgeMatrix[i][x] = 1;
+                    break;
+                }
+            }
+
+        }
+    }
+    return edgeMatrix;
+}
+
 Cycle Horton(int graph[V][V]){
     int* chemins = (int*)malloc(V * sizeof(int));
     int* parents = (int*)malloc(V * sizeof(int)); 
@@ -45,5 +88,5 @@ Cycle Horton(int graph[V][V]){
     free(chemins);
     free(parents);
     triFusion(sets, i);
-    return sets[0];// on est censé renvoyé le plus petit cycle mais je n'ai pas encore implémenté le tri
+    return sets[0];
 }

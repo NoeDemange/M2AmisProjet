@@ -1,6 +1,6 @@
 typedef struct {
     int source;
-    int* parents;
+    int* sommets;
     int taille; 
 } Cycle;
 

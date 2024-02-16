@@ -64,6 +64,8 @@ def remove_single_bond_atoms(mol):
     
     return mol
 
+#max=0
+#min = 10000
 for i, mol in enumerate(sdf_supplier):
     if mol is not None:
         ring_info = mol.GetRingInfo()
@@ -72,8 +74,13 @@ for i, mol in enumerate(sdf_supplier):
 
             # Suppression des atomes ayant moins de 2 liaisons
             mol = remove_single_bond_atoms(mol)
-
-            #if(mol.GetNumAtoms()>6):
+            '''if(max<mol.GetNumAtoms()):
+                max = mol.GetNumAtoms()
+                name_max = mol.GetProp("ChEBI Name")
+            if(min>mol.GetNumAtoms()):
+                min = mol.GetNumAtoms()
+                name_min = mol.GetProp("ChEBI Name")'''
+            
             chebi_id = mol.GetProp("ChEBI ID")
             chebi_id = chebi_id.replace(':', '_')
             output_file_name = os.path.join(output_directory, f'{chebi_id}.txt')
@@ -88,5 +95,13 @@ for i, mol in enumerate(sdf_supplier):
                 output_file.write(f"{len(transition_matrix)}\n")  # Write the size of the matrix
                 for row in transition_matrix:
                     output_file.write(' '.join(map(str, row)) + "\n")
+                
+                # Write atoms symbols
+                atoms = mol.GetAtoms()
+                output_file.write("\n")
+                for atom in atoms:
+                    atom_symbol = atom.GetSymbol()
+                    output_file.write(atom_symbol)
 
+#print(name_max + " " + str(max) + " min " + name_min + " "+ str(min))
 os.remove(unzipped_file_name)

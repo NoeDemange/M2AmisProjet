@@ -25,6 +25,8 @@ Ce projet suit une structure de dossier organisée pour une meilleure gestion et
 
 - **include/** : Les fichiers d'en-tête (.h) nécessaires pour le projet en C sont placés ici. Ces fichiers définissent les interfaces des fonctions et structures utilisées dans le projet.
 
+- **nauty/** : L'emplacement pour les fichiers de la bibliothèque nauty, qui doit être pré-installée manuellement (cf. la section ci-dessous).
+
 - **obj/** : Les fichiers objets (.o) générés lors de la compilation sont stockés ici. Ces fichiers sont les résultats intermédiaires de la compilation des fichiers source.
 
 - **data/** : Ce dossier contient les fichiers de molécules chargé depuis la base de données.
@@ -38,6 +40,21 @@ Ce projet suit une structure de dossier organisée pour une meilleure gestion et
 - **script.py** : Script Python pour récupérer des données de la base de données.
 
 Cette structure de dossier organisée aide à maintenir le projet propre et bien organisé.
+
+## Utilisation de la bibliothèque NAUTY pour la numérotation canonique des sommets d'un graphe
+
+Ce programme requiert d'utiliser la bibliothèque nauty, de Brendan McKay and Adolfo Piperno. Elle peut être téléchargée depuis la page web des auteurs (la version 2.8.8 a été utilisée).
+- [page web "nauty and Traces"](https://pallini.di.uniroma1.it/#howtogetit)
+- [lien de téléchargement de nauty version 2.8.8](https://pallini.di.uniroma1.it/#howtogetit)
+
+Une fois la bibliothèque téléchargée, il faut lancer les commandes suivantes, à la racine du dossier contenant la bibliothèque (ie. le dossier *nautyx_x_x*) :
+
+```
+./confige
+make
+```
+
+Puis il faut déplacer les fichiers `nauty.h` et `nauty.a` dans le dossier de ce dépôt nommé *nauty*.
 
 ## Compilation
 

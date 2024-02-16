@@ -1,7 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "Dijkstra.h"
+#include "Horton.h"
+#include "McKay.h"
+
 int main(int argc, char** argv) {
-    printf("Hello World! \n");
+    
+    testMcKay();
+    
     return EXIT_SUCCESS;
 }

@@ -3,8 +3,10 @@ TARGET   = graphCycleMol.exe
 
 CFLAGS=-Wall -g
 LDFLAGS=-lm
+LDNAUTY = nauty/nauty.a
 
 INCDIR=-Iinclude
+INCNAUTY=-Inauty
 OBJDIR=obj
 SRCDIR=src
 BINDIR=bin
@@ -17,10 +19,10 @@ OBJ:=$(SRC:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 all: $(EXEC)
 
 $(BINDIR)/$(TARGET): $(OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LDNAUTY)
 
 $(OBJ) : $(OBJDIR)/%.o : $(SRCDIR)/%.c
-	$(CC) $(INCDIR) -o $@ -c $< $(CFLAGS)
+	$(CC) $(INCDIR) $(INCNAUTY) -o $@ -c $< $(CFLAGS)
 
 .PHONY: clean mrproper dir run data
 

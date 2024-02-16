@@ -4,3 +4,5 @@ bin/*
 callgrind.out.*
 M2AmisProjet_GroupeB.zip
 data/*
+nauty/nauty.h
+nauty/nauty.a

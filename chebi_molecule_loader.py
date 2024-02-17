@@ -12,11 +12,12 @@ except ImportError:
     os.system("pip install rdkit")
     from rdkit import Chem
 
-def get_transition_matrix(mol):
-    """Generate the transition matrix for a molecule, ignoring hydrogen atoms."""
+def get_upper_transition_matrix(mol):
+    """Generate the upper triangle transition matrix for a molecule, ignoring hydrogen atoms."""
     atoms = [atom for atom in mol.GetAtoms() if atom.GetAtomicNum() != 1]  # Exclude hydrogens
     matrix_size = len(atoms)
     transition_matrix = [[0] * matrix_size for _ in range(matrix_size)]
+    upper_triang_matrix = []
 
     atom_index = {atom.GetIdx(): i for i, atom in enumerate(atoms)}  # Map from atom index to reduced index
 
@@ -30,7 +31,14 @@ def get_transition_matrix(mol):
             transition_matrix[begin_index][end_index] = 1
             transition_matrix[end_index][begin_index] = 1  # Assuming undirected graph for simplicity
 
-    return transition_matrix
+    for i in range(matrix_size):
+        row = [0] * (matrix_size - i)
+        for j in range(matrix_size):
+            if j >= i :
+                row[j - i] = transition_matrix[i][j]
+        upper_triang_matrix.append(row)
+
+    return upper_triang_matrix
 
 url = 'https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_lite_3star.sdf.gz'
 downloaded_file_name = 'ChEBI_lite_3star.sdf.gz'
@@ -75,18 +83,19 @@ for i, mol in enumerate(sdf_supplier):
 
             #if(mol.GetNumAtoms()>6):
             chebi_id = mol.GetProp("ChEBI ID")
-            chebi_id = chebi_id.replace(':', '_')
-            output_file_name = os.path.join(output_directory, f'{chebi_id}.txt')
+            chebi_id = chebi_id.replace('CHEBI:', '')
+            output_file_name = os.path.join(output_directory, f'{chebi_id}')
 
             with open(output_file_name, 'w') as output_file:
 
-                chebi_name = mol.GetProp("ChEBI Name")
-                output_file.write(f'Molecule Name: {chebi_name}\n\n')
                 # Generate the transition matrix for the molecule
-                transition_matrix = get_transition_matrix(mol) #Chem.rdmolops.GetAdjacencyMatrix(mol)
+                transition_matrix = get_upper_transition_matrix(mol) #Chem.rdmolops.GetAdjacencyMatrix(mol)
                 # Write the matrix to the file
                 output_file.write(f"{len(transition_matrix)}\n")  # Write the size of the matrix
                 for row in transition_matrix:
                     output_file.write(' '.join(map(str, row)) + "\n")
+                # Write infos
+                chebi_name = mol.GetProp("ChEBI Name")
+                output_file.write(f'\nMolecule Name: {chebi_name}\n')
 
 os.remove(unzipped_file_name)

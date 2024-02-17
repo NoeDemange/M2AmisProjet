@@ -1,6 +1,7 @@
 #include "nauty.h"
+#include "structure.h"
 
-void testMcKay(void) {
+int* numerotationCanonique(graphmol *graphe_mol) {
 
   // Déclaration des pointeurs sans allouer de mémoire.
   DYNALLSTAT(graph,g,g_sz);
@@ -14,9 +15,9 @@ void testMcKay(void) {
   options.getcanon = TRUE;
   statsblk stats;
   
-  int n,m,i;
+  int n,m,i,j;
 
-  n = 7;
+  n = graphe_mol->nb_sommets;
   m = SETWORDSNEEDED(n);
 
   // Vérifie la compatibilité des procédures de nauty
@@ -30,21 +31,85 @@ void testMcKay(void) {
   DYNALLOC1(int,orbits,orbits_sz,n,"malloc");
 
   EMPTYGRAPH(g,m,n);
-  ADDONEEDGE(g,0,1,m);
-  ADDONEEDGE(g,1,2,m);
-  ADDONEEDGE(g,2,3,m);
-  ADDONEEDGE(g,3,4,m);
-  ADDONEEDGE(g,4,5,m);
-  ADDONEEDGE(g,5,6,m);
-  ADDONEEDGE(g,6,0,m);
-  ADDONEEDGE(g,2,4,m);
-  ADDONEEDGE(g,1,5,m);
-
-  printf("Numérotation canonique d'un graphe de %d sommets :\n",n);
-  densenauty(g,lab,ptn,orbits,&options,&stats,m,n,canong);
 
   for (i = 0; i < n; i++) {
-    printf(" %d->%d", lab[i] + 1, i + 1);
+    for (j = i + 1; j < n; j++) {
+      if (graphe_mol->adjacence[i][j] == 1) {
+        ADDONEEDGE(g,i,j,m);
+      }
+    }
   }
-  printf("\n");
+
+  densenauty(g,lab,ptn,orbits,&options,&stats,m,n,canong);
+
+  int *perm = malloc(n * sizeof(int));
+
+  for (i = 0; i < n; i++) {
+    perm[lab[i]] = i;
+  }
+
+  return perm;
+}
+
+void grapheCanonique(graphmol *graphe_mol) {
+
+  int n = graphe_mol->nb_sommets;
+  int i,j, premier = -1;
+
+  int *perm = numerotationCanonique(graphe_mol);
+
+  int *temp1 = malloc(n * sizeof(int));
+  int *temp2 = malloc(n * sizeof(int));
+
+  // Trouver le premier sommet à permuter
+  for (i = 0; i < n; i++) {
+    if (perm[i] != i) {
+      premier = i;
+      break;
+    }
+  }
+  // Déjà canonique
+  if (premier == -1) {
+    return;
+  }
+
+  // Permutation des lignes
+  // Première ligne permutée
+  for (j = 0; j < n; j++) {
+    temp1[j] = graphe_mol->adjacence[perm[premier]][j];
+    graphe_mol->adjacence[perm[premier]][j] = graphe_mol->adjacence[premier][j];
+  }
+
+  i = perm[premier];
+  // Toutes les autres lignes
+  while (i != premier) {
+    for (j = 0; j < n; j++) {
+      temp2[j] = graphe_mol->adjacence[perm[i]][j];
+      graphe_mol->adjacence[perm[i]][j] = temp1[j];
+      temp1[j] = temp2[j];
+    }
+    i = perm[i];
+  }
+
+  // Permutation des colonnes
+  // Première colonne permutée
+  for (i = 0; i < n; i++) {
+    temp1[i] = graphe_mol->adjacence[i][perm[premier]];
+    graphe_mol->adjacence[i][perm[premier]] = graphe_mol->adjacence[i][premier];
+  }
+
+  j = perm[premier];
+  // Toutes les autres colonnes
+  while (j != premier) {
+    for (i = 0; i < n; i++) {
+      temp2[i] = graphe_mol->adjacence[i][perm[j]];
+      graphe_mol->adjacence[i][perm[j]] = temp1[i];
+      temp1[i] = temp2[i];
+    }
+    j = perm[j];
+  }
+
+  free(perm);
+  free(temp1);
+  free(temp2);
 }

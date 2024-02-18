@@ -1,8 +1,7 @@
-typedef struct {
-    int source;
-    int* sommets;
-    int taille; 
-} Cycle;
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "TriFusion.h"
 
 void merge(Cycle cycles[], int l, int m, int r) {
     int i, j, k;
@@ -67,4 +66,26 @@ void mergeSort(Cycle cycles[], int l, int r) {
 // Fonction pour trier les cycles par taille croissante en utilisant le tri fusion
 void triFusion(Cycle cycles[], int taille) {
     mergeSort(cycles, 0, taille - 1);
+}
+
+void triParInsertionSommets(Cycle c, int id_cycle, indexCycles *index_cycles) {
+    
+    int *tab = c.sommets;
+    int n = c.taille;
+    int i, j, id_courant;
+
+    ajouterCycleDansIndex(index_cycles, tab[0], id_cycle);
+
+    for (i = 1; i < n; i++) {
+        id_courant = tab[i];
+        j = i - 1;
+ 
+        while (j >= 0 && tab[j] > id_courant) {
+            tab[j + 1] = tab[j];
+            j = j - 1;
+        }
+        tab[j + 1] = id_courant;
+
+        ajouterCycleDansIndex(index_cycles, id_courant, id_cycle);
+    }
 }

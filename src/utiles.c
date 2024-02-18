@@ -3,6 +3,7 @@
 #include <sys/time.h>
 
 double chrono() {
+  
 	struct timeval tv;
 	static double date_deb = 0.0;
 	double date_courante;
@@ -31,4 +32,12 @@ void verifScan(int valeur, char *nom_fichier) {
     printf("Erreur à la lecture du fichier %s\n", nom_fichier);
     exit(EXIT_FAILURE);
   }
+}
+
+void printTab(int *tab, int n) {
+    
+    int i;
+    for (i = 0; i < n; i++)
+        printf("%d ", tab[i]);
+    printf("\n");
 }

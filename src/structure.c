@@ -168,3 +168,180 @@ void printListeFichiers(listeFichiers *fichiers) {
     printf("\n");
   }
 }
+
+indexCycles* initIndexCycles(int taille) {
+
+  indexCycles *index_cycles = malloc(taille * sizeof(indexCycles));
+  index_cycles->taille = taille;
+  int i, j;
+
+  for (i = 0; i < taille; i++) {
+    index_cycles[i].cycles = malloc(SIZE_INDEX * sizeof(int));
+
+    for (j = 0; j < SIZE_INDEX; j++) {
+      index_cycles[i].cycles[j] = -1;
+    }
+  }
+
+  return index_cycles;
+}
+
+void resetIndexCycles(indexCycles *index_cycles, int taille) {
+
+  int i, j;
+  for (i = 0; i < taille; i++) {
+    j = 0;
+    while (j < SIZE_INDEX && index_cycles[i].cycles[j] != -1) {
+      index_cycles[i].cycles[j] = -1;
+      j++;
+    }
+  }
+}
+
+void ajouterCycleDansIndex(indexCycles *index_cycles, int id_sommet, int id_cycle) {
+    
+  if (id_sommet > index_cycles->taille) {
+    printf("Erreur : la taille de buffer allouée pour indexer les cycles");
+    printf(" est inférieure à la taille du graphe moléculaire.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  int i = 0;
+  while (i < SIZE_INDEX && index_cycles[id_sommet].cycles[i] != -1) {
+    i++;
+  }
+  if (i == SIZE_INDEX) {
+    // TODO faire un realloc
+    printf("Erreur interne : taille de buffer SIZE_INDEX est trop petite.\n");
+    exit(EXIT_FAILURE);
+  }
+  else {
+    index_cycles[id_sommet].cycles[i] = id_cycle;
+  }
+}
+
+void freeIndexCycles(indexCycles *index_cycles) {
+
+  int i ;
+  for (i = 0; i < index_cycles->taille; i++) {
+    free(index_cycles[i].cycles);
+  }
+  free(index_cycles);
+}
+
+void printIndexCycles(indexCycles *index_cycles, int taille) {
+
+  int i, j;
+
+  if (taille <= 0) {
+    taille = index_cycles->taille;
+  }
+  for (i = 0; i < taille; i++) {
+    printf("%d :", i);
+    j = 0;
+    while (j < SIZE_INDEX && index_cycles[i].cycles[j] != -1) {
+      printf(" c%d", index_cycles[i].cycles[j]);
+      j++;
+    }
+    printf("\n");
+  }
+}
+
+grapheCycles initGrapheCycles(listeCycles *liste_c) {
+
+  grapheCycles g;
+  g.nb_sommets = liste_c->nb_cycles;
+  g.nb_aretes = 0;
+  g.aretes = NULL;
+  g.sommets = malloc(liste_c->nb_cycles * sizeof(sommet));
+  int i;
+
+  for (i = 0; i < liste_c->nb_cycles; i++) {
+    g.sommets[i].id = i;
+    g.sommets[i].taille = liste_c->cycles[i].taille;
+  }
+
+  return g;
+}
+
+arete initArete(int id1, int id2, int type, int poids) {
+
+  arete a;
+  a.id1 = id1;
+  a.id2 = id2;
+  a.type = type;
+  a.poids = poids;
+
+  return a;
+}
+
+// Crée une arête entre les sommets id1 et id2 et l'ajoute à la liste aretes.
+// Initialise la liste aretes si elle est vide.  
+void ajouterAreteDansListe(listeAretes **aretes, int *nb_aretes, int id1, int id2, int type, int poids) {
+
+  if (*aretes == NULL) {
+    *aretes = malloc(sizeof(listeAretes));
+    (*aretes)->a = initArete(id1, id2, type, poids);
+    (*aretes)->suiv = NULL;
+  }
+  else {
+    listeAretes *nouvelle = malloc(sizeof(listeAretes));
+    nouvelle->a = initArete(id1, id2, type, poids);
+    nouvelle->suiv = *aretes;
+    *aretes = nouvelle;
+  }
+  (*nb_aretes)++;
+}
+
+void freeListeAretes(listeAretes *aretes) {
+
+  listeAretes *temp;
+  while (aretes) {
+    temp = aretes;
+    aretes = aretes->suiv;
+    free(temp);
+  }
+}
+
+// Insère les arêtes de la liste dans le tableau aretes de g,
+// et libère la mémoire allouée à la liste.  
+void ajouterAreteDansGraphe(grapheCycles *g, listeAretes *aretes, int nb_aretes) {
+
+  g->nb_aretes = nb_aretes;
+  g->aretes = malloc(nb_aretes * sizeof(arete));
+  int i = 0;
+
+  listeAretes *temp;
+  while (aretes) {
+    temp = aretes;
+    aretes = aretes->suiv;
+    g->aretes[i] = temp->a;
+    free(temp);
+    i++;
+  }
+}
+
+void freeGrapheCycles(grapheCycles g) {
+
+  free(g.aretes);
+  free(g.sommets);
+}
+
+void printGrapheCycles(grapheCycles g) {
+
+  int i, j;
+
+  if (g.aretes) {
+    for (i = 0; i < g.nb_sommets; i++) {
+      printf("s%d :", g.sommets[i].id + 1);
+
+      for (j = 0; j < g.nb_aretes; j++) {
+        if (g.aretes[j].id1 == i)
+          printf(" s%d", g.aretes[j].id2 + 1);
+        else if (g.aretes[j].id2 == i)
+          printf(" s%d", g.aretes[j].id1 + 1);
+      }
+      printf("\n");
+    }
+  }
+}

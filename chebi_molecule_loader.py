@@ -72,22 +72,15 @@ def remove_single_bond_atoms(mol):
     
     return mol
 
-#max=0
-#min = 10000
+
 for i, mol in enumerate(sdf_supplier):
     if mol is not None:
         ring_info = mol.GetRingInfo()
-        
+
         if ring_info.NumRings() > 0:
 
             # Suppression des atomes ayant moins de 2 liaisons
             mol = remove_single_bond_atoms(mol)
-            '''if(max<mol.GetNumAtoms()):
-                max = mol.GetNumAtoms()
-                name_max = mol.GetProp("ChEBI Name")
-            if(min>mol.GetNumAtoms()):
-                min = mol.GetNumAtoms()
-                name_min = mol.GetProp("ChEBI Name")'''
             
             chebi_id = mol.GetProp("ChEBI ID")
             chebi_id = chebi_id.replace('CHEBI:', '')
@@ -111,5 +104,4 @@ for i, mol in enumerate(sdf_supplier):
                     atom_symbol = atom.GetSymbol()
                     output_file.write(atom_symbol)
 
-#print(name_max + " " + str(max) + " min " + name_min + " "+ str(min))
 os.remove(unzipped_file_name)

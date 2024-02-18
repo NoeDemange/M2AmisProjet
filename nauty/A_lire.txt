@@ -1,0 +1,1 @@
+Insérer ici les fichiers nauty.h et nauty.a d'après la procédure expliquée dans le README

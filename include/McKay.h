@@ -3,7 +3,7 @@
 
 #include "structure.h"
 
-int* numerotationCanonique(graphmol *graphe_mol);
-void grapheCanonique(graphmol *graphe_mol);
+int* numerotationCanonique(grapheMol *graphe_mol);
+void grapheCanonique(grapheMol *graphe_mol);
 
 #endif

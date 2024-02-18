@@ -1,7 +1,7 @@
 #include "nauty.h"
 #include "structure.h"
 
-int* numerotationCanonique(graphmol *graphe_mol) {
+int* numerotationCanonique(grapheMol *graphe_mol) {
 
   // Déclaration des pointeurs sans allouer de mémoire.
   DYNALLSTAT(graph,g,g_sz);
@@ -51,7 +51,7 @@ int* numerotationCanonique(graphmol *graphe_mol) {
   return perm;
 }
 
-void grapheCanonique(graphmol *graphe_mol) {
+void grapheCanonique(grapheMol *graphe_mol) {
 
   int n = graphe_mol->nb_sommets;
   int i,j, premier = -1;

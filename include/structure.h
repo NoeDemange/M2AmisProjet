@@ -1,28 +1,53 @@
 #ifndef STRUCTURE_H
 #define STRUCTURE_H
 
-typedef struct graphmol {
+typedef struct grapheMol {
   int chebi_id;
   int nb_sommets;
   int **adjacence;
-} graphmol;
+} grapheMol;
 
-typedef struct filenames {
+typedef struct sommet {
+  int id;
+  int taille;
+} sommet;
+
+typedef struct arete {
+  int id1;
+  int id2;
+  int type;
+  int poids;
+} arete;
+
+typedef struct listeAretes {
+  arete a;
+  struct listeAretes *suiv;
+} listeAretes;
+
+typedef struct grapheCycle {
+  int chebi_id;
+  int nb_sommets;
+  int nb_aretes;
+  sommet *sommets;
+  arete *aretes;
+} grapheCycle;
+
+typedef struct listeFichiers {
   char *nom;
-  struct filenames *suiv;
-} filenames;
+  struct listeFichiers *suiv;
+} listeFichiers;
 
 void procedure(char *nom_dossier, int max_fichiers);
-filenames* lireDossier(char *nom_dossier, int max_fichiers);
-graphmol lireFichier(char* nom_dossier, char *nom_fichier);
+listeFichiers* lireDossier(char *nom_dossier, int max_fichiers);
+grapheMol lireFichier(char* nom_dossier, char *nom_fichier);
 
-graphmol initGraphMol(int nb_sommets, int chebi_id);
-void freeGraphMol(graphmol g);
-void printGraphMol(graphmol g);
+grapheMol initGrapheMol(int nb_sommets, int chebi_id);
+void freeGrapheMol(grapheMol g);
+void printGrapheMol(grapheMol g);
 
-filenames* initFileNames(void);
-filenames* freeFileName(filenames *fichier);
-void addFileName(filenames **fichiers, char *nom_fichier);
-void printFileNames(filenames *fichiers);
+listeFichiers* initListeFichiers(void);
+listeFichiers* freeListeFichiers(listeFichiers *fichier);
+void ajouterNomFichier(listeFichiers **fichiers, char *nom_fichier);
+void printListeFichiers(listeFichiers *fichiers);
 
 #endif

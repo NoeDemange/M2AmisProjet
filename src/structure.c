@@ -9,36 +9,38 @@
 
 void procedure(char *nom_dossier, int max_fichiers) {
   
-  filenames *fichiers = lireDossier(nom_dossier, max_fichiers);
+  listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers);
   if (max_fichiers > 0)
-    printFileNames(fichiers);
+    printListeFichiers(fichiers);
   
   while (fichiers) {
 
-    graphmol g = lireFichier(nom_dossier, fichiers->nom);
+    grapheMol g = lireFichier(nom_dossier, fichiers->nom);
+
+    // TODO tester si g a plus de 3 sommets.
 
     if (max_fichiers > 0) {
-      printGraphMol(g);
+      printGrapheMol(g);
       printf("McKay\n");
     }
 
     grapheCanonique(&g);
 
     if (max_fichiers > 0)
-    printGraphMol(g);
+    printGrapheMol(g);
 
-    fichiers = freeFileName(fichiers);
-    freeGraphMol(g);
+    fichiers = freeListeFichiers(fichiers);
+    freeGrapheMol(g);
   }
 }
  
  // Scanne le dossier nom_dossier et stocke le nom de max_fichiers fichiers dans une liste.
  // Si max_fichiers <= 0, stocke tous les fichiers du dossier (sauf ".", "..").
-filenames* lireDossier(char *nom_dossier, int max_fichiers) {
+listeFichiers* lireDossier(char *nom_dossier, int max_fichiers) {
   
   struct dirent *dir;
   DIR *d = opendir(nom_dossier);
-  filenames *fichiers = initFileNames();
+  listeFichiers *fichiers = initListeFichiers();
   int iter = 0;
 
   if (d) {
@@ -48,7 +50,7 @@ filenames* lireDossier(char *nom_dossier, int max_fichiers) {
       char *nom_fichier = (char *)malloc(taille_allouee);
       strcpy(nom_fichier, dir->d_name);
       if (strcmp(".", nom_fichier) && strcmp("..", nom_fichier)) {
-        addFileName(&fichiers, nom_fichier);
+        ajouterNomFichier(&fichiers, nom_fichier);
         iter++;
       }
     }
@@ -58,12 +60,12 @@ filenames* lireDossier(char *nom_dossier, int max_fichiers) {
   return fichiers;
 }
 
-// Scanne le fichier nom_fichier et stocke le contenu de la matrice d'adjacence dans un graphmol.
+// Scanne le fichier nom_fichier et stocke le contenu de la matrice d'adjacence dans un grapheMol.
 // Le nom du fichier doit être le numéro du ChEBI id.
-graphmol lireFichier(char* nom_dossier, char *nom_fichier) {
+grapheMol lireFichier(char* nom_dossier, char *nom_fichier) {
   
   FILE *f;
-  graphmol g;
+  grapheMol g;
   int nb_sommets, premier, valeur;
   int i, j;
 
@@ -73,7 +75,7 @@ graphmol lireFichier(char* nom_dossier, char *nom_fichier) {
   f = fopen(path, "r");
   verifScan(fscanf(f, "%d", &nb_sommets), nom_fichier);
 
-  g = initGraphMol(nb_sommets, atoi(nom_fichier));
+  g = initGrapheMol(nb_sommets, atoi(nom_fichier));
 
   for (i = 0; i < nb_sommets; i++) {
     verifScan(fscanf(f, "%d", &premier), nom_fichier);
@@ -88,9 +90,9 @@ graphmol lireFichier(char* nom_dossier, char *nom_fichier) {
   return g;
 }
 
-graphmol initGraphMol(int nb_sommets, int chebi_id) {
+grapheMol initGrapheMol(int nb_sommets, int chebi_id) {
 
-  graphmol g;
+  grapheMol g;
   g.nb_sommets = nb_sommets;
   g.chebi_id = chebi_id;
   g.adjacence = malloc(nb_sommets * sizeof(int*));
@@ -102,7 +104,7 @@ graphmol initGraphMol(int nb_sommets, int chebi_id) {
   return g;
 }
 
-void freeGraphMol(graphmol g) {
+void freeGrapheMol(grapheMol g) {
 
   for(int i = 0; i < g.nb_sommets; i++) {
     free(g.adjacence[i]);
@@ -110,7 +112,7 @@ void freeGraphMol(graphmol g) {
   free(g.adjacence);
 }
 
-void printGraphMol(graphmol g) {
+void printGrapheMol(grapheMol g) {
   
   printf("matrice adj de %d : %d\n", g.chebi_id, g.nb_sommets);
   for (int i = 0; i < g.nb_sommets; i++) {
@@ -121,31 +123,31 @@ void printGraphMol(graphmol g) {
   }
 }
 
-filenames* initFileNames(void) {
+listeFichiers* initListeFichiers(void) {
 
-  filenames *f = malloc(sizeof(struct filenames));
+  listeFichiers *f = malloc(sizeof(struct listeFichiers));
   f->nom = NULL;
   f->suiv = NULL;
   return f;
 }
 
-void addFileName(filenames **fichiers, char *nom_fichier) {
+void ajouterNomFichier(listeFichiers **fichiers, char *nom_fichier) {
 
   if (fichiers && (*fichiers)->nom == NULL) {
     (*fichiers)->nom = nom_fichier;
   }
   else {
-    filenames *nouveau = malloc(sizeof(struct filenames));
+    listeFichiers *nouveau = malloc(sizeof(struct listeFichiers));
     nouveau->nom = nom_fichier;
     nouveau->suiv = *fichiers;
     *fichiers = nouveau;
   }
 }
 
-filenames* freeFileName(filenames *fichier) {
+listeFichiers* freeListeFichiers(listeFichiers *fichier) {
   
   if (fichier) {
-    filenames *suiv;
+    listeFichiers *suiv;
     suiv = fichier->suiv;
     free(fichier->nom);
     free(fichier);
@@ -154,11 +156,11 @@ filenames* freeFileName(filenames *fichier) {
   return NULL;
 }
 
-void printFileNames(filenames *fichiers) {
+void printListeFichiers(listeFichiers *fichiers) {
   
   if (fichiers) {
     printf("%s", fichiers->nom);
-    filenames *fichier = fichiers->suiv;
+    listeFichiers *fichier = fichiers->suiv;
     while(fichier) {
       printf(", %s", fichier->nom);
       fichier = fichier->suiv;

@@ -35,22 +35,6 @@ void marquerAretesCycles(grapheMol *g, listeCycles *liste_c) {
   }
 }
 
-// Si les arêtes du graphe appartenant à un cycle sont marquées 2,
-// retourne les isthmes (marquées 1), et sauvegarde leur nombre dans nb_isthmes.
-listeAretes* trouverIsthmes(grapheMol g, int *nb_isthmes) {
-
-  listeAretes *isthmes = NULL;
-  int i, j;
-  for (i = 0; i < g.nb_sommets; i++) {
-    for (j = i + 1; j < g.nb_sommets; j++) {
-      if (g.adjacence[i][j] == 1) {
-        ajouterAreteDansListe(&isthmes, nb_isthmes, i, j, 0, 0);
-      }
-    }
-  }
-  return isthmes;
-}
-
 // Trie les sommets de tous les cycles contenus dans liste_c par identifiant croissant.
 // Remplie également un tableau d'index contenant les id des cycles auxquels appartient chaque sommet.
 // A la fin, index_cycles[i].cycles est un tableau qui contient :
@@ -110,12 +94,13 @@ void ajouterAreteCyclesJoints(listeCycles *liste_c, listeAretes **aretes, int *n
 
 // Parcourt les arêtes du graphe appartenant à une chaîne et dont l'extrémité se termine dans un cycle.
 // A l'appel de la fonction, id_debut doit être égal à id_1. Le parcours commence
-// donc par l'arête id1-id2 au première appel de la fonction, puis la fonction
+// par l'arête id1-id2 au première appel de la fonction, puis la fonction
 // explore récurssivement toutes les chaînes commençant par id1-id2 en passant 
 // par les arêtes marquées 1 (=isthmes) dans la matrice d'adjacence du graphe.
-// Quand id2 appartient à un cycle, ajoute une arête, dans la liste aretes,
-// entre tous les cycles contenant le sommet id_debut et tous les cycles contenant
-// le sommet id2. Le poids de l'arête correspond à la taille de la chaine parcourue.
+// Quand id2 appartient à un cycle, ajoute une arête entre tous les cycles contenant 
+// le sommet id_debut et tous ceux contenant le sommet id2, dans la liste aretes.
+// Le poids de l'arête correspond à la taille de la chaine parcourue.
+// Enfin, l'arête est marquée comme traitée (-1 dans la partie triangulaire inférieure de la matrice d'adjacence).
 void parcoursChaine(int id_debut, int id1, int id2, int taille, listeAretes **aretes, int *nb_aretes, indexCycles *index_cycles, grapheMol g) {
 
   // Si Sommet id2 appartient à un cycle
@@ -136,59 +121,63 @@ void parcoursChaine(int id_debut, int id1, int id2, int taille, listeAretes **ar
       }
       i++;
     }
-    // Marquer le sommet id1 comme vu
-    index_cycles[id1].cycles[0] = -2;
   }
   // Sinon, aller voir tous les sommets voisins de id2
   else {
     int j;
-    for (j = 0; j < g.nb_sommets; j++) {
-      // Le voisin est différent de id1 et est l'extrémité d'un isthme
+    // Pour tous les voisins différents de id1 et qui appartiennent à un isthme
+    for (j = 0; j < id2; j++) {
+      if (j!= id1 && g.adjacence[j][id2] == 1) {
+        parcoursChaine(id_debut, id2, j, taille + 1, aretes, nb_aretes, index_cycles, g);
+      }
+    }
+    for (j = id2 + 1; j < g.nb_sommets; j++) {
       if (j!= id1 && g.adjacence[id2][j] == 1) {
         parcoursChaine(id_debut, id2, j, taille + 1, aretes, nb_aretes, index_cycles, g);
       }
     } 
   }
-  return; // Seulement si condition remplie
+  // Marquer l'isthme (arête id1-id2) comme vu
+  if (id1 < id2) {
+    g.adjacence[id2][id1] = -1;
+  }
+  else {
+    g.adjacence[id1][id2] = -1;
+  }
 }
 
-// Récupère la liste des isthmes du graphe g, la parcourt et teste :
+// Parcourt les isthmes dans la matrice d'adjacence de g, et teste :
 // + si l'isthme est partagée entre deux cycles, ajoute une arête dans aretes.
 // + si l'isthme a une seule extrémité dans un cycle, fait un parcours sur
 // les arêtes et s'arrête sur les premiers sommets appartenant à un cycle. 
 //
 // index_cycles donne l'id des cycles auxquels appartient le sommet i, sinon -1.
-// index_cycles est aussi utilisé pour marquer les sommets appartenant à un isthme
-// qui sont déjà traités. Ils sont marqués -2 (voir dans parcoursChaine).
+// La partie triangulaire inférieure de la matrice d'adjacence de g est utilisée
+// pour marquer (-1) les isthmes qui ont déjà été vus.
 void ajouterAreteCyclesDisjoints(listeCycles *liste_c, listeAretes **aretes, int *nb_aretes, indexCycles *index_cycles, grapheMol g) {
 
-  int nb_isthmes = 0;
-  int id1, id2;
+  int i, j;
 
   marquerAretesCycles(&g, liste_c);
-  listeAretes *isthmes = trouverIsthmes(g, &nb_isthmes);
-  listeAretes *temp;
 
-  while (isthmes) {
-    id1 = isthmes->a.id1;
-    id2 = isthmes->a.id2;
-    // Chaine de taille 1 entre deux cycles
-    if (index_cycles[id1].cycles[0] > -1 && index_cycles[id2].cycles[0] > -1) {
-      ajouterAreteDansListe(aretes, nb_aretes, id1, id2, 2, 1);
+  for (i = 0; i < g.nb_sommets; i++) {
+    for (j = i + 1; j < g.nb_sommets; j++) {
+      // Pour tous les isthmes non marqués (= déjà vus)
+      if (g.adjacence[i][j] == 1 && g.adjacence[j][i] != -1) {
+        // Chaine de taille 1 entre deux cycles
+        if (index_cycles[i].cycles[0] > -1 && index_cycles[j].cycles[0] > -1) {
+          ajouterAreteDansListe(aretes, nb_aretes, i, j, 2, 1);
+        }
+        // Sommet i appartient à un cycle
+        else if (index_cycles[i].cycles[0] > -1 && index_cycles[j].cycles[0] == -1) {
+          parcoursChaine(i, i, j, 1, aretes, nb_aretes, index_cycles, g);
+        }
+        // Sommet j appartient à un cycle
+        else if (index_cycles[i].cycles[0] == -1 && index_cycles[j].cycles[0] > -1) {
+          parcoursChaine(j, j, i, 1, aretes, nb_aretes, index_cycles, g);
+        }
+      }
     }
-    // Isthme au milieu d'une chaîne ou déjà vue
-    //else if (index_cycles[id1].cycles[0] == -1 && index_cycles[id1].cycles[0] == -1) {}
-
-    else if (index_cycles[id1].cycles[0] > -1 && index_cycles[id2].cycles[0] == -1) {
-      parcoursChaine(id1, id1, id2, 1, aretes, nb_aretes, index_cycles, g);
-    }
-    else if (index_cycles[id1].cycles[0] == -1 && index_cycles[id2].cycles[0] > -1) {
-      parcoursChaine(id2, id2, id1, 1, aretes, nb_aretes, index_cycles, g);
-    }
-
-    temp = isthmes;
-    isthmes = isthmes->suiv;
-    free(temp);
   }
 }
 

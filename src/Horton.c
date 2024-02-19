@@ -72,7 +72,6 @@ Cycle TransfoEnCycle(int v, int x, int y, int parents[], int V){
     cycle.source = v;
     cycle.sommets = sommets;
     cycle.taille = i+2;
-    free(sommets);
     free(index);
 
     return cycle;
@@ -113,6 +112,7 @@ bool verification_ajout_cycle(Cycle *sets, int nb_cycles , Cycle c)
             //deux fois le même cycle
 			if( compteur == c.taille)
 			{
+                free(c.sommets);
 				return false;
 			}
 		}
@@ -203,7 +203,7 @@ int ** Horton(int** graph,int nb_sommets){
     int* chemins = (int*)malloc(nb_sommets * sizeof(int));
     int* parents = (int*)malloc(nb_sommets * sizeof(int)); 
     int v = 0;
-    int i = 0;
+    int nb_cycles = 0;
     Cycle* sets = NULL;
     Cycle c;
     for (v = 0; v < nb_sommets; v ++){
@@ -216,9 +216,9 @@ int ** Horton(int** graph,int nb_sommets){
                         if (y!= v && check_cycle(graph,x,nb_sommets)){
                             if (Intersection(parents,x,y,v) && graph[x][y] != 0) {
                                 c = TransfoEnCycle(v, x, y, parents,nb_sommets);
-                                if (verification_ajout_cycle(sets,i,c)){
-                                    sets = ajouter_un_cycle(sets, i, c);
-                                    i++;    
+                                if (verification_ajout_cycle(sets,nb_cycles,c)){
+                                    sets = ajouter_un_cycle(sets, nb_cycles, c);
+                                    nb_cycles++;    
                                 }
                             }
                         }
@@ -229,21 +229,22 @@ int ** Horton(int** graph,int nb_sommets){
     }
     free(chemins);
     free(parents);
-    triFusion(sets, i);
-    int ** base_de_cycle = Elimination_Gaussienne(sets, i, graph,nb_sommets);
+    triFusion(sets, nb_cycles);
+    int ** base_de_cycle = Elimination_Gaussienne(sets, nb_cycles, graph,nb_sommets);
     
     int nb_arcs;
     Edge* edges = obtenirArcs(graph,&nb_arcs,nb_sommets);
     free(edges);
 
-    for(int xi = 0; xi< i ; xi++){
+    for(int xi = 0; xi< nb_cycles ; xi++){
         for(int xj = 0; xj< nb_arcs; xj++){
             printf("%d ",base_de_cycle[xi][xj]);
         }
         printf("\n");
     }
-    for (int xx = 0; xx<i ; xx++){
-        free(base_de_cycle[xx]);
+    for (int xi = 0; xi<nb_cycles ; xi++){
+        free(sets[xi].sommets);
+        free(base_de_cycle[xi]);
     }
     free(base_de_cycle);
     free(sets);

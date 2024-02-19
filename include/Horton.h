@@ -10,7 +10,8 @@ typedef struct {
     int poids; 
 } Edge;
 
-bool Intersection(int* chemins, int* parents,int x, int y);
+bool check_cycle(int ** graph,int v,int nb_sommets);
+bool Intersection(int* parents,int x, int y,int v);
 Cycle TransfoEnCycle(int v, int x, int y, int parents[],int V);
 Cycle *ajouter_un_cycle(Cycle *sets, int nb_cycles, Cycle c);
 bool verification_ajout_cycle(Cycle *sets, int nb_cycles , Cycle c);

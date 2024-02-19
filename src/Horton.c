@@ -1,26 +1,37 @@
 #include "Horton.h"
 #include "TriFusion.h"
 
-bool Intersection(int* chemins, int* parents,int x, int y){
+//regarde si un sommet à au moins 2 voisins
+bool check_cycle(int ** graph, int src,int nb_sommets){
+    int trouve = 0;
+    for (int i = 0; i < nb_sommets; i++){
+        if(graph[src][i] !=0){
+            trouve++;
+            if(trouve == 2){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Intersection(int* parents,int x, int y,int v){
     int chem1 = x;
     int chem2 = y;
-    printf("hello");
-    while (chemins[chem1] != 0){
-        printf("hey");
+    while (chem1 != v){
         chem2 = y;
-        while (chemins[chem2] != 0){
-
-            if (parents[chem1] == parents[chem2]){
+        while (chem2 != v){
+            if (chem1 == chem2 && chem1 != v){
                 return false;
             }
             chem2 = parents[chem2];
         }
         chem1 = parents[chem1];
     }           
-
     return true;
 
 }
+
 
 Cycle TransfoEnCycle(int v, int x, int y, int parents[], int V){
 
@@ -32,43 +43,40 @@ Cycle TransfoEnCycle(int v, int x, int y, int parents[], int V){
     int chem2 = y;
     sommets[0] = v;
     int i = 0;
-    int j = 0;
-    printf("hi");
-    while (parents[chem1] != v){
-        index[i] = chem1;
+    while (chem2 != v){
+        index[i] = chem2;
+        chem2 = parents[chem2];
         i++;
-        chem1 = parents[chem1];
-    }   
+    }
+    int debut = 0;
+    int fin = i - 1;
 
-    printf("hey again");
-    index[i] = chem1;
+    while (debut < fin) {
+        int temp = index[debut];
+        index[debut] = index[fin];
+        index[fin] = temp;
+
+        debut++;
+        fin--;
+    }
+    while (chem1 != v){
+        index[i] = chem1;
+        chem1 = parents[chem1];
+        i++;
+    }
+    i--;
     for (int xi = 0; xi<=i; xi++){
         sommets[xi+1] = index[i-xi];
     }
 
-
-    printf("its me");
-    while (parents[chem2] != v){
-        index[j] = chem2;
-        j++;
-        chem2 = parents[chem2];
-    }
-
-    printf("i'm here");
-    index[j] = chem2;
-    for (int xi = 0; xi<=j; xi++){
-        sommets[xi+1+i] = index[j-xi];
-    }        
-
     cycle.source = v;
     cycle.sommets = sommets;
-    cycle.taille = i + j +1;
+    cycle.taille = i+2;
     free(sommets);
     free(index);
 
     return cycle;
 }
-
 Cycle *ajouter_un_cycle(Cycle *sets, int nb_cycles, Cycle c){
 	if( sets == NULL)
 	{
@@ -199,16 +207,21 @@ int ** Horton(int** graph,int nb_sommets){
     Cycle* sets = NULL;
     Cycle c;
     for (v = 0; v < nb_sommets; v ++){
-        dijkstra(graph, v, chemins, parents,nb_sommets);
-        for (int x = 0; x < nb_sommets; x++) {
-            for (int y = x + 1; y < nb_sommets; y++) {
-                printf("wow");
-                if (Intersection(chemins,parents,x,y)) {
-                    printf("mais non");
-                    c = TransfoEnCycle(v, x, y, parents,nb_sommets);
-                    if (verification_ajout_cycle(sets,i,c)){
-                        sets = ajouter_un_cycle(sets, i, c);
-                        i++;    
+        if(check_cycle(graph,v,nb_sommets)){
+            dijkstra(graph, v, chemins, parents,nb_sommets);
+            for (int x = 0; x < nb_sommets; x++) {
+                if (x != v && check_cycle(graph,x,nb_sommets)){
+
+                    for (int y = x + 1; y < nb_sommets; y++) {
+                        if (y!= v && check_cycle(graph,x,nb_sommets)){
+                            if (Intersection(parents,x,y,v) && graph[x][y] != 0) {
+                                c = TransfoEnCycle(v, x, y, parents,nb_sommets);
+                                if (verification_ajout_cycle(sets,i,c)){
+                                    sets = ajouter_un_cycle(sets, i, c);
+                                    i++;    
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -225,8 +238,9 @@ int ** Horton(int** graph,int nb_sommets){
 
     for(int xi = 0; xi< i ; xi++){
         for(int xj = 0; xj< nb_arcs; xj++){
-            printf("%d",base_de_cycle[xi][xj]);
+            printf("%d ",base_de_cycle[xi][xj]);
         }
+        printf("\n");
     }
     for (int xx = 0; xx<i ; xx++){
         free(base_de_cycle[xx]);

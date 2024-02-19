@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <limits.h>
+#include <stdlib.h>
 
-#define V 6
 
-int minDistance(int dist[], bool visited[]);
-void dijkstra(int graph[V][V], int src, int shortestDistances[], int parents[]);
+int minDistance(int dist[], bool visited[],int nb_sommets);
+void dijkstra(int** graph, int src, int shortestDistances[], int parents[],int nb_sommets);
 
 #endif

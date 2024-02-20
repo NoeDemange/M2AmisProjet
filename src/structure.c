@@ -6,6 +6,7 @@
 #include "structure.h"
 #include "utiles.h"
 #include "McKay.h"
+#include "Horton.h"
 
 void procedure(char *nom_dossier, int max_fichiers) {
   
@@ -18,7 +19,7 @@ void procedure(char *nom_dossier, int max_fichiers) {
     grapheMol g = lireFichier(nom_dossier, fichiers->nom);
 
     // TODO tester si g a plus de 3 sommets.
-
+    printf("CHEBI:%d\n",g.chebi_id);
     if (max_fichiers > 0) {
       printGrapheMol(g);
       printf("McKay\n");
@@ -26,6 +27,8 @@ void procedure(char *nom_dossier, int max_fichiers) {
 
     grapheCanonique(&g);
 
+    int ** base_de_cycle = Horton(g.adjacence,g.nb_sommets);
+    free(base_de_cycle);
     if (max_fichiers > 0)
     printGrapheMol(g);
 
@@ -46,7 +49,7 @@ listeFichiers* lireDossier(char *nom_dossier, int max_fichiers) {
   if (d) {
     while ((dir = readdir(d)) != NULL && (iter < max_fichiers || max_fichiers <= 0)) {
 
-      size_t taille_allouee = strlen(dir->d_name) ;
+      size_t taille_allouee = strlen(dir->d_name)+1 ;
       char *nom_fichier = (char *)malloc(taille_allouee);
       strcpy(nom_fichier, dir->d_name);
       if (strcmp(".", nom_fichier) && strcmp("..", nom_fichier)) {

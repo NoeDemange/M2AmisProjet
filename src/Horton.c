@@ -93,21 +93,22 @@ Cycle *ajouter_un_cycle(Cycle *sets, int nb_cycles, Cycle c){
 
 bool verification_ajout_cycle(Cycle *sets, int nb_cycles , Cycle c)
 {
-	int i,j;
-	
 	int compteur ;	
-	for( i =  0; i < nb_cycles; i++)
+	for(int i =  0; i < nb_cycles; i++)
 	{
 		
 		if(sets[i].taille == c.taille)
 		{
 			compteur = 0;
-			for( j =  0; j < c.taille; j++)
+			for(int j =  0; j < c.taille; j++)
 			{
-				if(c.sommets[j] == sets[i].sommets[j])
+                for(int s =  0; s < sets[i].taille; s++)
+			    {
+				if(c.sommets[j] == sets[i].sommets[s])
 				{
 					compteur++;
 				}
+                }
 			}
             //deux fois le même cycle
 			if( compteur == c.taille)
@@ -135,6 +136,10 @@ Edge* obtenirArcs(int** graph, int* numArcs,int nb_sommets) {
             }
         }
     }
+    for(int aff=0; aff<*numArcs;aff++){
+        printf("%d,%d ",edges[aff].source, edges[aff].target);
+    }
+    printf("\n");
 
     return edges;
 }
@@ -148,9 +153,11 @@ int** Marquage(Cycle* set,int nb_cycles,int** graph,int nb_arcs, Edge * edges){
 
 
     for (int i = 0; i < nb_cycles; i++) {
-        for (int j = 0; j+1 < set[i].taille; j++){
+        for (int j = 0; j < set[i].taille; j++){
             for (int x = 0; x < nb_arcs; x ++){
-                if(set[i].sommets[j] == edges[x].source && set[i].sommets[j+1] == edges[x].target){
+                if((set[i].sommets[j] == edges[x].source && set[i].sommets[(j+1)%set[i].taille] == edges[x].target) ||
+                (set[i].sommets[j] == edges[x].target && set[i].sommets[(j+1)%set[i].taille] == edges[x].source)
+                ){
                     edgeMatrix[i][x] = 1;
                     break;
                 }
@@ -162,17 +169,27 @@ int** Marquage(Cycle* set,int nb_cycles,int** graph,int nb_arcs, Edge * edges){
 }
 
 
-int ** Elimination_Gaussienne(Cycle* set,int nb_cycles,int** graph,int nb_sommets){
+int ** Elimination_Gaussienne(Cycle* set,int *nb_cycles,int** graph,int nb_sommets){
     int nb_arcs;
     Edge* edges = obtenirArcs(graph,&nb_arcs,nb_sommets);
-    int ** edgeMatrix = Marquage(set,nb_cycles,graph,nb_arcs,edges);
-    int i,j,k,l;
+    int ** edgeMatrix = Marquage(set,*nb_cycles,graph,nb_arcs,edges);
+
+    // ///////AFFICHAGE////////
+    // for(int xi = 0; xi< (*nb_cycles) ; xi++){
+    //     for(int xj = 0; xj< nb_arcs; xj++){
+    //         printf("%d ",edgeMatrix[xi][xj]);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("\n");
+
+    // Gaussian Elimination
     int first;
-        for (i = 0; i < nb_cycles - 1; i++)
+        for (int i = 0; i < (*nb_cycles) - 1; i++)
         {
             //trouver le premier un 
             first = -1;
-            for (j= 0; j < nb_arcs; j++)
+            for (int j= 0; j < nb_arcs; j++)
             {
                 if(edgeMatrix[i][j] == 1)
                 {
@@ -182,21 +199,80 @@ int ** Elimination_Gaussienne(Cycle* set,int nb_cycles,int** graph,int nb_sommet
             }
             if(first != -1)
             {
-                for ( k = i+1; k < nb_cycles; k++)
+                for (int k = i+1; k < (*nb_cycles); k++)
                 {
                     if( edgeMatrix[k][first] == 1)
                     {
-                        for ( l = 0; l < nb_arcs;l++)
+                        for (int l = 0; l < nb_arcs;l++)
                         {
                             //Xor
-                            edgeMatrix[k][l] ^= edgeMatrix[k][l] & edgeMatrix[i][l];
+                            edgeMatrix[k][l] ^=  edgeMatrix[i][l];
                         }
                     }
                 }
             }
         }
-        free(edges);
-        return edgeMatrix;
+
+    ///////AFFICHAGE////////
+    for(int xi = 0; xi< (*nb_cycles) ; xi++){
+        for(int xj = 0; xj< nb_arcs; xj++){
+            printf("%d ",edgeMatrix[xi][xj]);
+        }
+        printf("\n");
+    }
+
+    // Count the number of independent cycles
+    int independent_cycles = 0;
+    for (int i = 0; i < (*nb_cycles); i++) {
+        bool independent = false;
+        for (int j = 0; j < nb_arcs; j++) {
+            if (edgeMatrix[i][j] == 1) {
+                independent = true;
+                break;
+            }
+        }
+        if (independent) {
+            independent_cycles++;
+        }
+    }
+
+    // Create the minimum basis
+    int ** minimum_basis = (int**)malloc(independent_cycles * sizeof(int*));
+    int basis_index = 0;
+    for (int i = 0; i < (*nb_cycles); i++) {
+        bool independent = false;
+        for (int j = 0; j < nb_arcs; j++) {
+            if (edgeMatrix[i][j] == 1) {
+                independent = true;
+                break;
+            }
+        }
+        if (independent) {
+            minimum_basis[basis_index] = (int*)malloc(nb_arcs * sizeof(int));
+            for (int j = 0; j < nb_arcs; j++) {
+                minimum_basis[basis_index][j] = edgeMatrix[i][j];
+            }
+            basis_index++;
+        }
+    }
+
+    //  ///////AFFICHAGE////////
+    //  printf("Indep %d\n", independent_cycles);
+    // for(int xi = 0; xi< independent_cycles ; xi++){
+    //     for(int xj = 0; xj< nb_arcs; xj++){
+    //         printf("%d ",minimum_basis[xi][xj]);
+    //     }
+    //     printf("\n");
+    // }
+
+    // Free memory
+    for (int i = 0; i < (*nb_cycles); i++) {
+        free(edgeMatrix[i]);
+    }
+    free(edgeMatrix);
+    free(edges);
+    *(nb_cycles)=independent_cycles;
+    return minimum_basis;
 }
 
 int ** Horton(int** graph,int nb_sommets){
@@ -227,15 +303,26 @@ int ** Horton(int** graph,int nb_sommets){
             }
         }
     }
+    ///////AFFICHAGE////////
+    for(int affS = 0; affS< nb_cycles; affS++){
+        printf("Cycle src: %d, taille: %d, sommets:",sets[affS].source, sets[affS].taille);
+        for(int aff = 0; aff<sets[affS].taille; aff++){
+            printf("%d,",sets[affS].sommets[aff]);
+        }
+        printf("\n");
+    }
+
+
     free(chemins);
     free(parents);
     triFusion(sets, nb_cycles);
-    int ** base_de_cycle = Elimination_Gaussienne(sets, nb_cycles, graph,nb_sommets);
+    int ** base_de_cycle = Elimination_Gaussienne(sets, &nb_cycles, graph,nb_sommets);
     
     int nb_arcs;
     Edge* edges = obtenirArcs(graph,&nb_arcs,nb_sommets);
     free(edges);
-
+    ///////AFFICHAGE////////
+    printf("fin \n");
     for(int xi = 0; xi< nb_cycles ; xi++){
         for(int xj = 0; xj< nb_arcs; xj++){
             printf("%d ",base_de_cycle[xi][xj]);
@@ -246,7 +333,7 @@ int ** Horton(int** graph,int nb_sommets){
         free(sets[xi].sommets);
         free(base_de_cycle[xi]);
     }
-    free(base_de_cycle);
+    //free(base_de_cycle);
     free(sets);
     return base_de_cycle;
 }
@@ -256,14 +343,22 @@ void Test_Horton(){
     int V = 6;
     graph = malloc(V * sizeof(int*));
     int graph_init[6][6] = {
-        {0, 4, 0, 0, 0, 0},
+        {0, 4, 0, 0, 1, 0},
         {4, 0, 8, 0, 0, 0},
         {0, 8, 0, 7, 0, 4},
         {0, 0, 7, 0, 9, 14},
-        {0, 0, 0, 9, 0, 10},
+        {1, 0, 0, 9, 0, 10},
         {0, 0, 4, 14, 10, 0}
     };
-    
+    /*int graph_init[6][6] = {
+        {0, 1, 0, 0, 0, 1},
+        {1, 0, 1, 0, 1, 0},
+        {0, 1, 0, 1, 0, 0},
+        {0, 0, 1, 0, 1, 0},
+        {0, 1, 0, 1, 0, 1},
+        {1, 0, 0, 0, 1, 0}
+    };*/
+
     for (int i = 0; i < V; i++) {
         graph[i] = malloc(V * sizeof(int));
         for (int j = 0; j < V; j++) {

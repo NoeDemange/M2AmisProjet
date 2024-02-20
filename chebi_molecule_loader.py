@@ -72,16 +72,25 @@ def remove_single_bond_atoms(mol):
     
     return mol
 
+def has_disconnected_components(mol):
+    frags = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
+    return len(frags) > 1
 
-for i, mol in enumerate(sdf_supplier):
+excluded = ['CHEBI:60153'] #listes des molécules exclues car posent problèmes
+for mol in sdf_supplier:
     if mol is not None:
+        if mol.GetProp("ChEBI ID") in excluded:
+                continue  # Skip molecules
         ring_info = mol.GetRingInfo()
 
         if ring_info.NumRings() > 0:
 
             # Suppression des atomes ayant moins de 2 liaisons
             mol = remove_single_bond_atoms(mol)
-            
+
+            if has_disconnected_components(mol):
+                continue  # Skip molecules with disconnected components
+
             chebi_id = mol.GetProp("ChEBI ID")
             chebi_id = chebi_id.replace('CHEBI:', '')
             output_file_name = os.path.join(output_directory, f'{chebi_id}')

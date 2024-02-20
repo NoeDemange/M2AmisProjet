@@ -13,7 +13,7 @@ void marquerAretesCycles(grapheMol *g, listeCycles *liste_c) {
 
   int i, j, n;
   int id1, id2;
-  Cycle c;
+  cycle c;
   n = liste_c->nb_cycles;
   
   for (i = 0; i < n; i++) {
@@ -51,7 +51,7 @@ void trierSommetsCycles(listeCycles *liste_c, indexCycles *index_cycles) {
 }
 
 // Nombre de sommets en commun entre les cycles c1 et c2
-int intersectionCycles(Cycle c1, Cycle c2) {
+int intersectionCycles(cycle c1, cycle c2) {
 
   int id1, id2, n1, n2, intersection;
   n1 = c1.taille;

@@ -29,14 +29,14 @@ typedef struct listeAretes {
   struct listeAretes *suiv;
 } listeAretes;
 
-typedef struct Cycle {
+typedef struct cycle {
   int source;
   int* sommets;
   int taille; 
-} Cycle;
+} cycle;
 
 typedef struct listeCycles {
-  Cycle *cycles;
+  cycle *cycles;
   int nb_cycles;
 } listeCycles;
 
@@ -58,11 +58,18 @@ typedef struct listeFichiers {
   struct listeFichiers *suiv;
 } listeFichiers;
 
-void procedure(char *nom_dossier, int max_fichiers);
-listeFichiers* lireDossier(char *nom_dossier, int max_fichiers);
-grapheMol lireFichier(char* nom_dossier, char *nom_fichier);
+typedef struct element {
+    int id;
+    struct element *suiv;
+} element; 
+
+typedef struct file {
+    element *tete;
+    element *queue;
+} file;
 
 grapheMol initGrapheMol(int nb_sommets, int chebi_id);
+void resetGrapheMol(grapheMol g);
 void freeGrapheMol(grapheMol g);
 void printGrapheMol(grapheMol g);
 
@@ -70,6 +77,19 @@ listeFichiers* initListeFichiers(void);
 listeFichiers* freeListeFichiers(listeFichiers *fichier);
 void ajouterNomFichier(listeFichiers **fichiers, char *nom_fichier);
 void printListeFichiers(listeFichiers *fichiers);
+
+int estVide(file *file);
+element* initElement(int id);
+file* initFile(int id);
+void ajouterDansFile(file *file, int id);
+element defiler(file *file);
+void printFile(file *file);
+
+cycle *initCycle();
+listeCycles* initListeCycles();
+void ajouterCycleDansListe(listeCycles *cycles, cycle c);
+void freeListeCycles(listeCycles *cycles);
+void printListeCycles(listeCycles *cycles);
 
 indexCycles* initIndexCycles(int taille);
 void resetIndexCycles(indexCycles *index_cycles, int taille);

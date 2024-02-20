@@ -3,13 +3,13 @@
 
 #include "TriFusion.h"
 
-void merge(Cycle cycles[], int l, int m, int r) {
+void merge(cycle cycles[], int l, int m, int r) {
     int i, j, k;
     int n1 = m - l + 1;
     int n2 = r - m;
 
     // Crée des tableaux temporaires
-    Cycle L[n1], R[n2];
+    cycle L[n1], R[n2];
 
     // Copie les données dans les tableaux temporaires L[] et R[]
     for (i = 0; i < n1; i++)
@@ -49,7 +49,7 @@ void merge(Cycle cycles[], int l, int m, int r) {
 }
 
 // Tri fusion pour trier cycles[l..r] par taille croissante
-void mergeSort(Cycle cycles[], int l, int r) {
+void mergeSort(cycle cycles[], int l, int r) {
     if (l < r) {
         // Trouve le point médian
         int m = l + (r - l) / 2;
@@ -64,11 +64,11 @@ void mergeSort(Cycle cycles[], int l, int r) {
 }
 
 // Fonction pour trier les cycles par taille croissante en utilisant le tri fusion
-void triFusion(Cycle cycles[], int taille) {
+void triFusion(cycle cycles[], int taille) {
     mergeSort(cycles, 0, taille - 1);
 }
 
-void triParInsertionSommets(Cycle c, int id_cycle, indexCycles *index_cycles) {
+void triParInsertionSommets(cycle c, int id_cycle, indexCycles *index_cycles) {
     
     int *tab = c.sommets;
     int n = c.taille;

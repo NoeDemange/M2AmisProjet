@@ -1,94 +1,9 @@
-#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "structure.h"
 #include "utiles.h"
 #include "McKay.h"
-
-void procedure(char *nom_dossier, int max_fichiers) {
-  
-  listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers);
-  if (max_fichiers > 0)
-    printListeFichiers(fichiers);
-  
-  while (fichiers) {
-
-    grapheMol g = lireFichier(nom_dossier, fichiers->nom);
-
-    // TODO tester si g a plus de 3 sommets.
-
-    if (max_fichiers > 0) {
-      printGrapheMol(g);
-      printf("McKay\n");
-    }
-
-    grapheCanonique(&g);
-
-    if (max_fichiers > 0)
-    printGrapheMol(g);
-
-    fichiers = freeListeFichiers(fichiers);
-    freeGrapheMol(g);
-  }
-}
- 
- // Scanne le dossier nom_dossier et stocke le nom de max_fichiers fichiers dans une liste.
- // Si max_fichiers <= 0, stocke tous les fichiers du dossier (sauf ".", "..").
-listeFichiers* lireDossier(char *nom_dossier, int max_fichiers) {
-  
-  struct dirent *dir;
-  DIR *d = opendir(nom_dossier);
-  listeFichiers *fichiers = initListeFichiers();
-  int iter = 0;
-
-  if (d) {
-    while ((dir = readdir(d)) != NULL && (iter < max_fichiers || max_fichiers <= 0)) {
-
-      size_t taille_allouee = strlen(dir->d_name) ;
-      char *nom_fichier = (char *)malloc(taille_allouee);
-      strcpy(nom_fichier, dir->d_name);
-      if (strcmp(".", nom_fichier) && strcmp("..", nom_fichier)) {
-        ajouterNomFichier(&fichiers, nom_fichier);
-        iter++;
-      }
-    }
-    closedir(d);
-  }
-  printf("Nombre de fichiers : %d\n", iter);
-  return fichiers;
-}
-
-// Scanne le fichier nom_fichier et stocke le contenu de la matrice d'adjacence dans un grapheMol.
-// Le nom du fichier doit être le numéro du ChEBI id.
-grapheMol lireFichier(char* nom_dossier, char *nom_fichier) {
-  
-  FILE *f;
-  grapheMol g;
-  int nb_sommets, premier, valeur;
-  int i, j;
-
-  char path[264];
-  sprintf(path, "%s/%s", nom_dossier, nom_fichier);
-
-  f = fopen(path, "r");
-  verifScan(fscanf(f, "%d", &nb_sommets), nom_fichier);
-
-  g = initGrapheMol(nb_sommets, atoi(nom_fichier));
-
-  for (i = 0; i < nb_sommets; i++) {
-    verifScan(fscanf(f, "%d", &premier), nom_fichier);
-    for (j = i + 1; j < nb_sommets; j++) {
-      verifScan(fscanf(f, " %d", &valeur), nom_fichier);
-      g.adjacence[i][j] = valeur;
-      g.adjacence[j][i] = valeur;
-    }
-  }
-  fclose(f);
-
-  return g;
-}
 
 grapheMol initGrapheMol(int nb_sommets, int chebi_id) {
 
@@ -102,6 +17,18 @@ grapheMol initGrapheMol(int nb_sommets, int chebi_id) {
   }
 
   return g;
+}
+
+void resetGrapheMol(grapheMol g) {
+
+  int i,j;
+  for (i = 0; i < g.nb_sommets; i++) {
+    for (j = i + 1; j < g.nb_sommets; j++) {
+      if (g.adjacence[j][i] == -1) {
+        g.adjacence[j][i] = 1;
+      }
+    }
+  }
 }
 
 void freeGrapheMol(grapheMol g) {
@@ -121,6 +48,7 @@ void printGrapheMol(grapheMol g) {
     }
     printf("\n");
   }
+  printf("\n");
 }
 
 listeFichiers* initListeFichiers(void) {
@@ -165,6 +93,117 @@ void printListeFichiers(listeFichiers *fichiers) {
       printf(", %s", fichier->nom);
       fichier = fichier->suiv;
     }
+    printf("\n");
+  }
+}
+
+int estVide(file *file) {
+
+    if(file && file->tete) {
+        return 0;
+    }
+    return 1;
+}
+
+element* initElement(int id) {
+
+    element *nouveau = malloc(sizeof(element));
+    nouveau->id = id;
+    nouveau->suiv = NULL;
+    return nouveau;
+}
+
+file* initFile(int id) {
+
+    file *f = malloc(sizeof(file));
+    f->tete = initElement(id);
+    f->queue = f->tete;
+    return f;
+}
+ 
+void ajouterDansFile(file *file, int id) {
+    
+    if (estVide(file)) {
+        file->tete = initElement(id);
+        file->queue = file->tete;
+    }
+    else {
+        file->queue->suiv = initElement(id);
+        file->queue = file->queue->suiv;
+    }
+}
+ 
+element defiler(file *file) {
+
+    element copie;
+    element *temp = file->tete;
+    copie = *temp;
+    file->tete = file->tete->suiv;
+    free(temp);
+    return copie;
+}
+
+void printFile(file *file) {
+
+    if (file) {
+        element *suiv = file->tete;
+        while (suiv) {
+            printf("->%d", suiv->id);
+            suiv = suiv->suiv;
+        }
+        printf("\n");
+    }
+}
+
+cycle* initCycle() {
+    
+    cycle *c = malloc(sizeof(cycle));
+    c->sommets = NULL;
+    return c;
+}
+
+listeCycles* initListeCycles() {
+
+    listeCycles *cycles = malloc(sizeof(listeCycles));
+    cycles->cycles = NULL;
+    cycles->nb_cycles = 0;
+    return cycles;
+}
+
+void ajouterCycleDansListe(listeCycles *cycles, cycle c) {
+
+  if(cycles->cycles == NULL) {
+		cycles->cycles = malloc((cycles->nb_cycles + 1) * sizeof(cycle));
+	}
+	else {
+		cycle *temp = realloc(cycles->cycles, (cycles->nb_cycles + 1) * sizeof(cycle));
+    
+    if (temp == NULL) {
+      printf("Erreur de réallocation de la liste de cycles.\n");
+      exit(EXIT_FAILURE);
+    }
+    cycles->cycles = temp;
+	}
+	cycles->cycles[cycles->nb_cycles] = c;
+  (cycles->nb_cycles)++;
+}
+
+void freeListeCycles(listeCycles *cycles) {
+
+  if (cycles) {
+    if (cycles->cycles) {
+      free(cycles->cycles);
+    }
+    free(cycles);
+  }
+}
+
+void printListeCycles(listeCycles *cycles) {
+
+  int i;
+  for (i = 0; i < cycles->nb_cycles; i++) {
+    printf("c%d : ", i);
+    printTab(cycles->cycles[i].sommets, cycles->cycles[i].taille);
     printf("\n");
   }
 }

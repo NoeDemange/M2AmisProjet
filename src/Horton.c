@@ -22,10 +22,10 @@ bool Intersection(int* chemins, int* parents,int x, int y){
 
 }
 
-Cycle TransfoEnCycle(int v, int x, int y, int parents[], int V){
+cycle TransfoEnCycle(int v, int x, int y, int parents[], int V){
 
 
-    Cycle cycle;
+    cycle cycle;
     int* sommets = (int*)malloc(V * sizeof(int));
     int* index = (int*)malloc(V * sizeof(int));
     int chem1 = x;
@@ -69,22 +69,22 @@ Cycle TransfoEnCycle(int v, int x, int y, int parents[], int V){
     return cycle;
 }
 
-Cycle *ajouter_un_cycle(Cycle *sets, int nb_cycles, Cycle c){
+cycle *ajouter_un_cycle(cycle *sets, int nb_cycles, cycle c){
 	if( sets == NULL)
 	{
-		sets = malloc((nb_cycles + 1)* sizeof(Cycle));
+		sets = malloc((nb_cycles + 1)* sizeof(cycle));
 
 	}
 	else
 	{
-		sets = realloc(sets, (nb_cycles + 1)* sizeof(Cycle));
+		sets = realloc(sets, (nb_cycles + 1)* sizeof(cycle));
 	}
 	sets[nb_cycles] = c;
 	
 	return sets;
 }
 
-bool verification_ajout_cycle(Cycle *sets, int nb_cycles , Cycle c)
+bool verification_ajout_cycle(cycle *sets, int nb_cycles , cycle c)
 {
 	int i,j;
 	
@@ -131,7 +131,7 @@ Edge* obtenirArcs(int** graph, int* numArcs,int nb_sommets) {
     return edges;
 }
 
-int** Marquage(Cycle* set,int nb_cycles,int** graph,int nb_arcs, Edge * edges){
+int** Marquage(cycle* set,int nb_cycles,int** graph,int nb_arcs, Edge * edges){
     int** edgeMatrix = (int**)malloc(nb_cycles * sizeof(int*));
 
     for (int z = 0; z < nb_cycles; z++) {
@@ -154,7 +154,7 @@ int** Marquage(Cycle* set,int nb_cycles,int** graph,int nb_arcs, Edge * edges){
 }
 
 
-int ** Elimination_Gaussienne(Cycle* set,int nb_cycles,int** graph,int nb_sommets){
+int ** Elimination_Gaussienne(cycle* set,int nb_cycles,int** graph,int nb_sommets){
     int nb_arcs;
     Edge* edges = obtenirArcs(graph,&nb_arcs,nb_sommets);
     int ** edgeMatrix = Marquage(set,nb_cycles,graph,nb_arcs,edges);
@@ -196,8 +196,8 @@ int ** Horton(int** graph,int nb_sommets){
     int* parents = (int*)malloc(nb_sommets * sizeof(int)); 
     int v = 0;
     int i = 0;
-    Cycle* sets = NULL;
-    Cycle c;
+    cycle* sets = NULL;
+    cycle c;
     for (v = 0; v < nb_sommets; v ++){
         dijkstra(graph, v, chemins, parents,nb_sommets);
         for (int x = 0; x < nb_sommets; x++) {

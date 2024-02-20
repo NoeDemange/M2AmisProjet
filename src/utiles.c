@@ -41,3 +41,15 @@ void printTab(int *tab, int n) {
         printf("%d ", tab[i]);
     printf("\n");
 }
+
+void printMatrice(int **matrice, int n, int m) {
+
+  int i, j;
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < m; j++) {
+      printf(" %d", matrice[i][j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+}

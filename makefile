@@ -29,6 +29,9 @@ $(OBJ) : $(OBJDIR)/%.o : $(SRCDIR)/%.c
 run:
 	./$(BINDIR)/$(TARGET)
 
+valgrind:
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(BINDIR)/$(TARGET)
+
 data:
 	python3 chebi_molecule_loader.py
 

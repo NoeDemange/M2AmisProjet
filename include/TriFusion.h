@@ -3,10 +3,10 @@
 
 #include "structure.h"
 
-void merge(Cycle cycles[], int l, int m, int r);
-void mergeSort(Cycle cycles[], int l, int r);
-void triFusion(Cycle cycles[], int taille);
+void merge(cycle cycles[], int l, int m, int r);
+void mergeSort(cycle cycles[], int l, int r);
+void triFusion(cycle cycles[], int taille);
 
-void triParInsertionSommets(Cycle c, int id_cycle, indexCycles *index_cycles);
+void triParInsertionSommets(cycle c, int id_cycle, indexCycles *index_cycles);
 
 #endif

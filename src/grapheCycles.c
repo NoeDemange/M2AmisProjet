@@ -5,12 +5,11 @@
 #include "TriFusion.h"
 #include "utiles.h"
 
-grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, int max_sommets) {
+grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, indexCycles *index_cycles) {
 
   int nb_aretes = 0;
   listeAretes *aretes = NULL;
   grapheCycles graphe_cycles = initGrapheCycles(graphe_mol.chebi_id, cycles);
-  indexCycles *index_cycles = initIndexCycles(max_sommets);
 
   ajouterAreteCyclesDisjoints(cycles, &aretes, &nb_aretes, index_cycles, graphe_mol);
   //printIndexCycles(index_cycles, 30);
@@ -186,7 +185,7 @@ void ajouterAreteCyclesDisjoints(listeCycles *cycles, listeAretes **aretes, int 
 
   marquerAretesCycles(&g, cycles, index_cycles);
 
-  // printGrapheMol(g);
+  printGrapheMol(g);
 
   for (i = 0; i < g.nb_sommets; i++) {
     for (j = i + 1; j < g.nb_sommets; j++) {

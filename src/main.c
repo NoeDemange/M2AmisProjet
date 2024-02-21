@@ -6,8 +6,8 @@
 #include "Horton.h"
 
 int main(int argc, char** argv) {
-    
-    // Test_Horton();
+
+    #ifndef TEST // Def dans structure.h
 
     double debut, fin, sec;
     debut = chrono();
@@ -15,6 +15,12 @@ int main(int argc, char** argv) {
     fin = chrono();
     sec = fin - debut;
     tempsExecution(sec, "Temps d'exécution");
+
+    #else
+    
+    test("data", "77867");
+
+    #endif
     
     return EXIT_SUCCESS;
 }

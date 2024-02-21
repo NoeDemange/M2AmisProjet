@@ -3,7 +3,7 @@
 
 #include "structure.h"
 
-grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, int max_sommets);
+grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, indexCycles *index_cycles);
 void marquerAretesCycles(grapheMol *g, listeCycles *cycles, indexCycles *index_cycles);
 void trierSommetsCycles(listeCycles *liste_c);
 int intersectionCycles(cycle c1, cycle c2);

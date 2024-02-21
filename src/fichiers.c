@@ -10,6 +10,32 @@
 #include "grapheCycles.h"
 #include "parcours.h"
 
+void test(char *nom_dossier, char *nom_fichier) {
+
+  grapheMol graphe_mol;
+  listeCycles *cycles;
+  grapheCycles graphe_cycles;
+  indexCycles *index_cycles;
+
+  graphe_mol = lireFichier(nom_dossier, nom_fichier);
+  index_cycles = initIndexCycles(graphe_mol.nb_sommets);
+  printGrapheMol(graphe_mol);
+
+  grapheCanonique(&graphe_mol);
+  printGrapheMol(graphe_mol);
+
+  cycles = baseDeCyclesMinimale(graphe_mol);
+  printListeCycles(cycles);
+    
+  graphe_cycles = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
+  printGrapheCycles(graphe_cycles);
+
+  freeListeCycles(cycles);
+  freeGrapheMol(graphe_mol);
+  freeGrapheCycles(graphe_cycles);
+  freeIndexCycles(index_cycles);
+}
+
 void procedure(char *nom_dossier, int max_fichiers) {
   
   grapheMol graphe_mol;
@@ -18,6 +44,7 @@ void procedure(char *nom_dossier, int max_fichiers) {
   int max_sommets;
 
   listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers, &max_sommets);
+  indexCycles *index_cycles = initIndexCycles(max_sommets);
 
   printf("Max sommets : %d\n", max_sommets);
 
@@ -42,7 +69,7 @@ void procedure(char *nom_dossier, int max_fichiers) {
     if (max_fichiers > 0)
       printListeCycles(cycles);
     
-    graphe_cycles = transfoGrapheCycles(graphe_mol, cycles,  max_sommets);
+    graphe_cycles = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
     if (max_fichiers > 0)
       printGrapheCycles(graphe_cycles);
 
@@ -50,6 +77,7 @@ void procedure(char *nom_dossier, int max_fichiers) {
     freeListeCycles(cycles);
     freeGrapheMol(graphe_mol);
     freeGrapheCycles(graphe_cycles); // Temporaire
+    freeIndexCycles(index_cycles);
     fichiers = freeListeFichiers(fichiers);
   }
 }

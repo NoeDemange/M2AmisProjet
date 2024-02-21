@@ -202,6 +202,7 @@ void freeListeCycles(listeCycles *cycles) {
 void printListeCycles(listeCycles *cycles) {
 
   int i;
+  printf("Liste cycles :\n");
   for (i = 0; i < cycles->nb_cycles; i++) {
     printf("c%d : ", i);
     printTab(cycles->cycles[i].sommets, cycles->cycles[i].taille);
@@ -372,8 +373,25 @@ void printGrapheCycles(grapheCycles g) {
 
   if (g.aretes) {
     int i, j;
-    arete a;
+    int *ligne_cycle = malloc(g.nb_sommets * sizeof(int));
+    printf("Graphe de cycles :\n");
+    for (i = 0; i < g.nb_sommets; i++) {
+      for (j = 0; j < g.nb_sommets; j++) 
+        ligne_cycle[j] = 0;
 
+      for (j = 0; j < g.nb_aretes; j++) {
+        if (g.aretes[j].id1 == i) {
+          ligne_cycle[g.aretes[j].id2] = 1;
+        }
+        else if (g.aretes[j].id2 == i) {
+          ligne_cycle[g.aretes[j].id1] = 1;
+        }
+      }
+      for (j = 0; j < g.nb_sommets; j++)
+          printf("%d, ", ligne_cycle[j]);
+        printf("\n");
+    }
+    arete a;
     for (i = 0; i < g.nb_sommets; i++) {
       printf("c%d :", g.sommets[i].id);
 
@@ -390,5 +408,6 @@ void printGrapheCycles(grapheCycles g) {
       printf("c%d-c%d : t%d, poids %d\n", a.id1, a.id2, a.type, a.poids);
     }
     printf("\n");
+    free(ligne_cycle);
   }
 }

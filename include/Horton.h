@@ -16,7 +16,7 @@ cycle *ajouter_un_cycle(cycle *sets, int nb_cycles, cycle c);
 bool verification_ajout_cycle(cycle *sets, int nb_cycles , cycle c);
 Edge* obtenirArcs(int** graph, int* numArcs,int nb_sommets);
 int** Marquage(cycle* set,int nb_cycle,int** graph,int nb_arcs,Edge * edges);
-int ** Elimination_Gaussienne(cycle* set,int *nb_cycles,int** graph,int nb_sommets);
+cycle* Elimination_Gaussienne(cycle* set,int *nb_cycles,int** graph,int nb_sommets);
 int** Horton(int** graph,int nb_sommets);
 void Test_Horton();
 

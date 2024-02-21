@@ -1,6 +1,7 @@
 #include "Horton.h"
 #include "TriFusion.h"
 #include "utiles.h"
+#include "McKay.h"
 
 //regarde si un sommet à au moins 2 voisins
 bool check_cycle(int ** graph, int src,int nb_sommets){
@@ -170,7 +171,30 @@ int** Marquage(cycle* set,int nb_cycles,int** graph,int nb_arcs, Edge * edges){
 }
 
 
-int ** Elimination_Gaussienne(cycle* set,int *nb_cycles,int** graph,int nb_sommets){
+int *produit_xor_matrice(int *t, int *tab1, int *tab2,int nb){
+	t= malloc(nb*sizeof(int));
+	int i;
+	for ( i = 0; i < nb; i++)
+		t[i] = tab1[i]^tab2[i];
+	return t;
+	
+}
+
+//verifie si deux tableaux sont les memes
+int verification_egalite_tableaux(int *tab1,int *tab2 , int taille){
+	int i, verif = 1 ;
+	for( i = 0; i < taille ; i++)
+	{
+		if( tab1[i] != tab2[i])
+		{
+			verif = 0;
+			break;
+		}
+	}
+	return verif;
+}
+
+cycle* Elimination_Gaussienne(cycle* set,int *nb_cycles,int** graph,int nb_sommets){
     int nb_arcs;
     Edge* edges = obtenirArcs(graph,&nb_arcs,nb_sommets);
     int ** edgeMatrix = Marquage(set,*nb_cycles,graph,nb_arcs,edges);
@@ -183,6 +207,14 @@ int ** Elimination_Gaussienne(cycle* set,int *nb_cycles,int** graph,int nb_somme
         printf("\n");
     }
     printf("\n");
+
+    int ** save = malloc((*nb_cycles)*sizeof(int*));
+    for(int s = 0; s<(*nb_cycles);s++){
+        save[s] = malloc(nb_arcs*sizeof(int));
+        for(int sj=0; sj<nb_arcs;sj++){
+            save[s][sj] = edgeMatrix[s][sj];
+        }
+    }
 
     // Gaussian Elimination
     int first;
@@ -223,39 +255,77 @@ int ** Elimination_Gaussienne(cycle* set,int *nb_cycles,int** graph,int nb_somme
     }
 
     // Count the number of independent cycles
-    int independent_cycles = 0;
+   // int independent_cycles = 0;
+    int tab_base[(*nb_cycles)];
     for (int i = 0; i < (*nb_cycles); i++) {
-        bool independent = false;
+        tab_base[i] = 0;
         for (int j = 0; j < nb_arcs; j++) {
             if (edgeMatrix[i][j] == 1) {
-                independent = true;
+                tab_base[i] = 1;
                 break;
             }
         }
-        if (independent) {
-            independent_cycles++;
+        //if (independent) {
+        //    independent_cycles++;
+        //}
+    }
+
+int *aj_cycle,maxi,max_ind;
+    for(int i = 0; i<(*nb_cycles)-1;i++){
+        for(int j =i+1; j<(*nb_cycles);j++){
+            if(tab_base[i]*tab_base[j]==1){
+                aj_cycle=produit_xor_matrice(aj_cycle,save[i],save[j],nb_arcs);
+                for(int l =0; l<(*nb_cycles);l++){
+                    if(set[i].taille > set[j].taille){
+						maxi = set[i].taille;
+                        max_ind = i;
+                    }
+					else{
+						maxi = set[j].taille;
+                        max_ind = j;
+                    }
+                    if(verification_egalite_tableaux(aj_cycle,save[l],nb_arcs) == 1 && tab_base[l] == 0 && set[l].taille == maxi){
+                            tab_base[l] = 1;
+                            break;
+					}
+                }
+                free(aj_cycle);
+            }
         }
     }
 
-    // Create the minimum basis
-    int ** minimum_basis = (int**)malloc(independent_cycles * sizeof(int*));
-    int basis_index = 0;
-    for (int i = 0; i < (*nb_cycles); i++) {
-        bool independent = false;
-        for (int j = 0; j < nb_arcs; j++) {
-            if (edgeMatrix[i][j] == 1) {
-                independent = true;
-                break;
-            }
-        }
-        if (independent) {
-            minimum_basis[basis_index] = (int*)malloc(nb_arcs * sizeof(int));
-            for (int j = 0; j < nb_arcs; j++) {
-                minimum_basis[basis_index][j] = edgeMatrix[i][j];
-            }
-            basis_index++;
-        }
-    }
+    cycle* base_cycle = NULL;
+    int cycle_ind =0;
+    for(int i = 0; i < (*nb_cycles);i++)
+	{
+		if(tab_base[i] == 1)
+		{
+			base_cycle = ajouter_un_cycle(base_cycle, cycle_ind, set[i]);
+            cycle_ind++;
+		}
+	}
+
+
+
+    // // Create the minimum basis
+    // int ** minimum_basis = (int**)malloc(independent_cycles * sizeof(int*));
+    // int basis_index = 0;
+    // for (int i = 0; i < (*nb_cycles); i++) {
+    //     bool independent = false;
+    //     for (int j = 0; j < nb_arcs; j++) {
+    //         if (edgeMatrix[i][j] == 1) {
+    //             independent = true;
+    //             break;
+    //         }
+    //     }
+    //     if (independent) {
+    //         minimum_basis[basis_index] = (int*)malloc(nb_arcs * sizeof(int));
+    //         for (int j = 0; j < nb_arcs; j++) {
+    //             minimum_basis[basis_index][j] = edgeMatrix[i][j];
+    //         }
+    //         basis_index++;
+    //     }
+    // }
 
     //  ///////AFFICHAGE////////
     //  printf("Indep %d\n", independent_cycles);
@@ -269,11 +339,13 @@ int ** Elimination_Gaussienne(cycle* set,int *nb_cycles,int** graph,int nb_somme
     // Free memory
     for (int i = 0; i < (*nb_cycles); i++) {
         free(edgeMatrix[i]);
+        free(save[i]);
     }
+    free(save);
     free(edgeMatrix);
     free(edges);
-    *(nb_cycles)=independent_cycles;
-    return minimum_basis;
+    *(nb_cycles)=cycle_ind;
+    return base_cycle;
 }
 
 int ** Horton(int** graph,int nb_sommets){
@@ -304,6 +376,11 @@ int ** Horton(int** graph,int nb_sommets){
             }
         }
     }
+
+    free(chemins);
+    free(parents);
+    triFusion(sets, nb_cycles);
+
     ///////AFFICHAGE////////
     for(int affS = 0; affS< nb_cycles; affS++){
         printf("Cycle src: %d, taille: %d, sommets:",sets[affS].source, sets[affS].taille);
@@ -313,44 +390,42 @@ int ** Horton(int** graph,int nb_sommets){
         printf("\n");
     }
 
-
-    free(chemins);
-    free(parents);
-    triFusion(sets, nb_cycles);
-    int ** base_de_cycle = Elimination_Gaussienne(sets, &nb_cycles, graph,nb_sommets);
+    cycle* base_de_cycle = Elimination_Gaussienne(sets, &nb_cycles, graph,nb_sommets);
     
     int nb_arcs;
     Edge* edges = obtenirArcs(graph,&nb_arcs,nb_sommets);
     free(edges);
     ///////AFFICHAGE////////
     printf("fin \n");
-    for(int xi = 0; xi< nb_cycles ; xi++){
+    for(int affS = 0; affS< nb_cycles; affS++){
+        printf("Cycle src: %d, taille: %d, sommets:",base_de_cycle[affS].source, base_de_cycle[affS].taille);
+        for(int aff = 0; aff<base_de_cycle[affS].taille; aff++){
+            printf("%d,",base_de_cycle[affS].sommets[aff]);
+        }
+        printf("\n");
+    }
+    /*for(int xi = 0; xi< nb_cycles ; xi++){
         for(int xj = 0; xj< nb_arcs; xj++){
             printf("%d ",base_de_cycle[xi][xj]);
         }
         printf("\n");
-    }
-    for (int xi = 0; xi<nb_cycles ; xi++){
+    }*/
+    /*for (int xi = 0; xi<nb_cycles ; xi++){
         free(sets[xi].sommets);
         free(base_de_cycle[xi]);
-    }
+    }*/
     //free(base_de_cycle);
     free(sets);
-    return base_de_cycle;
+    int** base=NULL;
+    return base;
 }
 
 void Test_Horton(){
     int **graph;
-    int V = 22;
-    graph = malloc(V * sizeof(int*));
-    /*int graph_init[6][6] = {
-        {0, 4, 0, 0, 1, 0},
-        {4, 0, 8, 0, 0, 0},
-        {0, 8, 0, 7, 0, 4},
-        {0, 0, 7, 0, 9, 14},
-        {1, 0, 0, 9, 0, 10},
-        {0, 0, 4, 14, 10, 0}
-    };*/
+    grapheMol graphe_mol;
+    graphe_mol.chebi_id = 1729;
+    graphe_mol.nb_sommets = 22;
+    graph = malloc(graphe_mol.nb_sommets * sizeof(int*));
 
     int graph_init[22][22] = {
         {0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -375,58 +450,48 @@ void Test_Horton(){
 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1},
 {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0}
-        /*{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-        {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-        {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0},
-        {0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-        {1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-        {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}*/
-        /*{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-        {1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-        {0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-        {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}*/
     };
-    /*int graph_init[6][6] = {
-        {0, 1, 0, 0, 0, 1},
-        {1, 0, 1, 0, 1, 0},
-        {0, 1, 0, 1, 0, 0},
-        {0, 0, 1, 0, 1, 0},
-        {0, 1, 0, 1, 0, 1},
-        {1, 0, 0, 0, 1, 0}
-    };*/
 
-    for (int i = 0; i < V; i++) {
-        graph[i] = malloc(V * sizeof(int));
-        for (int j = 0; j < V; j++) {
+    /*graphe_mol.chebi_id = 15854;
+    graphe_mol.nb_sommets = 19;
+    graph = malloc(graphe_mol.nb_sommets * sizeof(int*));
+
+    int graph_init[19][19] = {
+        {0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0},
+        {1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1},
+        {0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0},
+        {0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1},
+        {0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0}};*/
+
+
+    for (int i = 0; i < graphe_mol.nb_sommets; i++) {
+        graph[i] = malloc(graphe_mol.nb_sommets * sizeof(int));
+        for (int j = 0; j < graphe_mol.nb_sommets; j++) {
             graph[i][j] = graph_init[i][j];
         }
     }
-    Horton(graph,V);
-    for (int i = 0; i < V; i++) {
+
+    graphe_mol.adjacence = graph;
+
+    grapheCanonique(&graphe_mol);
+    //printGrapheMol(graphe_mol);
+
+    Horton(graphe_mol.adjacence,graphe_mol.nb_sommets);
+    for (int i = 0; i < graphe_mol.nb_sommets; i++) {
         free(graph[i]);
     }
     free(graph);

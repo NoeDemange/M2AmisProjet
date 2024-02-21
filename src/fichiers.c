@@ -30,6 +30,8 @@ void test(char *nom_dossier, char *nom_fichier) {
   graphe_cycles = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
   printGrapheCycles(graphe_cycles);
 
+  generate_dot_file(&graphe_cycles);
+
   freeListeCycles(cycles);
   freeGrapheMol(graphe_mol);
   freeGrapheCycles(graphe_cycles);

@@ -2,7 +2,7 @@
 #define UTILES_H
 
 double chrono();
-void tempsExecution(double sec);
+void tempsExecution(double sec, char *info);
 void verifScan(int valeur, char *nom_fichier);
 void printTab(int *tab, int n);
 void printMatrice(int **matrice, int n, int m);

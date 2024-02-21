@@ -12,6 +12,7 @@ listeCycles* baseDeCyclesMinimale(grapheMol g) {
     int nb_aretes;
 
     listeCycles *cycles = initListeCycles();
+    listeCycles *base_minimale;
     int *parents = malloc(g.nb_sommets * sizeof(int));
 
     for (i = 0; i < g.nb_sommets; i++) {
@@ -20,20 +21,21 @@ listeCycles* baseDeCyclesMinimale(grapheMol g) {
     free(parents);
     triFusion(cycles->cycles, cycles->nb_cycles);
 
-    int ** matriceAretes = matriceAretesDansCycles(g, cycles, &nb_aretes);
-    printGrapheMol(g);
-    printMatrice(matriceAretes, cycles->nb_cycles, nb_aretes);
+    // printListeCycles(cycles);
 
-    return cycles;
+    base_minimale = eliminationGaussienne(g, cycles, &nb_aretes);
+
+    return base_minimale;
 }
 
-int** matriceAretesDansCycles(grapheMol g, listeCycles *cycles, int *nb_aretes) {
+int** matriceAretesDansCycles(grapheMol g, listeCycles *cycles, int *nb_aretes, int **index_aretes) {
 
     int i,j;
     int id1, id2, arete_id;
     *nb_aretes = 0;
-    int **matriceAretes = calloc(cycles->nb_cycles, sizeof(int*));
+    int **matrice_aretes = calloc(cycles->nb_cycles, sizeof(int*));    
 
+    // Numéroter les arêtes dans la matrice d'adjacence
     for (i = 0; i < g.nb_sommets; i++) {
         for (j = i + 1; j < g.nb_sommets; j++) {
             if (g.adjacence[j][i]) {
@@ -41,37 +43,139 @@ int** matriceAretesDansCycles(grapheMol g, listeCycles *cycles, int *nb_aretes) 
             }
         }
     }
+    // Mémoire
     for (i = 0; i < cycles->nb_cycles; i++) {
-        matriceAretes[i] = calloc(*nb_aretes, sizeof(int)); 
+        matrice_aretes[i] = calloc(*nb_aretes, sizeof(int)); 
     }
-
+    // Remplir la matrice matrice_aretes
     for (i = 0; i < cycles->nb_cycles; i++) {
+        // Mémoire
+        index_aretes[i] = malloc(cycles->cycles[i].taille * sizeof(int));
         // Arête entre premier et dernier atome du cycle
         id1 = cycles->cycles[i].sommets[0];
         id2 = cycles->cycles[i].sommets[cycles->cycles[i].taille - 1];
 
         if (id1 < id2) {
-            arete_id = g.adjacence[id2][id1];
+            arete_id = g.adjacence[id2][id1] - 1;
         }
         else {
-            arete_id = g.adjacence[id1][id2];
+            arete_id = g.adjacence[id1][id2] - 1;
         }
-        matriceAretes[i][arete_id] = 1;
+        matrice_aretes[i][arete_id] = 1;
+        index_aretes[i][0] = arete_id;
+
         // Arête entre si et si+1 dans le cycle
         for (j = 0; j < cycles->cycles[i].taille - 1; j++) {
             id1 = cycles->cycles[i].sommets[j];
             id2 = cycles->cycles[i].sommets[j + 1];
 
             if (id1 < id2) {
-                arete_id = g.adjacence[id2][id1];
+                arete_id = g.adjacence[id2][id1] - 1;
             }
             else {
-                arete_id = g.adjacence[id1][id2];
+                arete_id = g.adjacence[id1][id2] - 1;
             }
-            matriceAretes[i][arete_id] = 1;
+            matrice_aretes[i][arete_id] = 1;
+            index_aretes[i][j + 1] = arete_id; 
         }
     }
-    return matriceAretes;
+    return matrice_aretes;
+}
+
+listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles, int *nb_aretes) {
+    
+    int i, j, k, premier;
+    int somme_ligne, nb_independants, egalite;
+    // Tableau des id des arêtes par cycle
+    // Il y a autant d'arêtes que de sommets dans un cycle
+    int **index_aretes = malloc(cycles->nb_cycles * sizeof(int*));;
+    int **matrice_aretes = matriceAretesDansCycles(g, cycles, nb_aretes, index_aretes);
+    
+    // printMatrice(matrice_aretes, cycles->nb_cycles, *nb_aretes);
+    
+    int *cycles_independants = malloc(cycles->nb_cycles * sizeof(int));
+    int *cycles_deja_ajoutes =  calloc(cycles->nb_cycles, sizeof(int));
+    listeCycles *base_minimale = initListeCycles();
+
+    for (i = 0; i < cycles->nb_cycles; i++) {
+        cycles_independants[i] = 2;
+    }
+   
+    // Elimination de Gauss
+    for (i = 0; i < cycles->nb_cycles - 1; i++) {
+
+        premier = -1;
+        for (j = 0; j < *nb_aretes; j++) {
+            if(matrice_aretes[i][j] == 1) {
+                premier = j;
+                break;
+            }
+        }
+        if (premier != -1) {
+            for (j = i + 1; j < cycles->nb_cycles; j++) {
+                if (matrice_aretes[j][premier] == 1) {
+                    somme_ligne = 0;
+                    for (k = 0; k < *nb_aretes; k++) {
+                        matrice_aretes[j][k] ^=  matrice_aretes[i][k];// XOR
+                        if (matrice_aretes[j][k]) {
+                            somme_ligne++;
+                        }
+                    }
+                    cycles_independants[j] = (somme_ligne > 0) ? 1 : 0;
+                    // printf("%d <- %d XOR %d\n", j, j, i);
+                    // printMatrice(matrice_aretes, cycles->nb_cycles, *nb_aretes);
+                }
+            }
+        }
+    }
+
+    // Nombre de cycles indépendants
+    nb_independants = 0;
+    for (i = 0; i < cycles->nb_cycles; i++) {
+        if (cycles_independants[i]) {
+            nb_independants++;
+        }
+    }
+
+    // Trouver les cycles indépendants dans la liste de cycles d'origine
+    for (i = 0; i < cycles->nb_cycles; i++) {
+        // Le cycle n'a pas permuté de place
+        if (cycles_independants[i] == 2) {
+            ajouterCycleDansListe(base_minimale, cycles->cycles[i]);
+            cycles_deja_ajoutes[i] = 1;
+        }
+        // Trouver les cycles restant
+        else if (cycles_independants[i] == 1) {
+            for (j = 0; j < cycles->nb_cycles; j++) {
+                if (!cycles_deja_ajoutes[j]) {
+                    egalite = 1;
+                    for (k = 0; k < cycles->cycles[j].taille; k++) {
+                        if (matrice_aretes[i][index_aretes[j][k]] == 0) {
+                            egalite = 0;
+                            break;
+                        }
+                    }
+                    if (egalite) {
+                        ajouterCycleDansListe(base_minimale, cycles->cycles[j]);
+                        cycles_deja_ajoutes[j] = 1;
+                    }
+                }
+            }
+        }
+    }
+    // Libérer la mémoire
+    for (int i = 0; i < cycles->nb_cycles; i++) {
+        free(matrice_aretes[i]);
+        free(index_aretes[i]);
+    }
+    free(matrice_aretes);
+    free(index_aretes);
+    free(cycles_independants);
+    free(cycles_deja_ajoutes);
+    freeListeCycles(cycles);
+    resetGrapheMol(g);
+
+    return base_minimale;
 }
 
 // Transforme un sommet v et une arête x-y en cycle, en ordonnant

@@ -4,6 +4,7 @@
 #include "structure.h"
 #include "utiles.h"
 #include "McKay.h"
+#include "Horton.h"
 
 grapheMol initGrapheMol(int nb_sommets, int chebi_id) {
 
@@ -24,7 +25,7 @@ void resetGrapheMol(grapheMol g) {
   int i,j;
   for (i = 0; i < g.nb_sommets; i++) {
     for (j = i + 1; j < g.nb_sommets; j++) {
-      if (g.adjacence[j][i] == -1) {
+      if (g.adjacence[j][i] < 0 || g.adjacence[j][i] > 1) {
         g.adjacence[j][i] = 1;
       }
     }
@@ -204,8 +205,8 @@ void printListeCycles(listeCycles *cycles) {
   for (i = 0; i < cycles->nb_cycles; i++) {
     printf("c%d : ", i);
     printTab(cycles->cycles[i].sommets, cycles->cycles[i].taille);
-    printf("\n");
   }
+  printf("\n");
 }
 
 indexCycles* initIndexCycles(int taille) {
@@ -272,7 +273,7 @@ void printIndexCycles(indexCycles *index_cycles, int taille) {
 
   int i, j;
 
-  if (taille <= 0) {
+  if (taille <= 0 || taille > index_cycles->taille) {
     taille = index_cycles->taille;
   }
   for (i = 0; i < taille; i++) {
@@ -286,9 +287,10 @@ void printIndexCycles(indexCycles *index_cycles, int taille) {
   }
 }
 
-grapheCycles initGrapheCycles(listeCycles *liste_c) {
+grapheCycles initGrapheCycles(int chebi_id, listeCycles *liste_c) {
 
   grapheCycles g;
+  g.chebi_id = chebi_id;
   g.nb_sommets = liste_c->nb_cycles;
   g.nb_aretes = 0;
   g.aretes = NULL;
@@ -368,19 +370,25 @@ void freeGrapheCycles(grapheCycles g) {
 
 void printGrapheCycles(grapheCycles g) {
 
-  int i, j;
-
   if (g.aretes) {
+    int i, j;
+    arete a;
+
     for (i = 0; i < g.nb_sommets; i++) {
-      printf("s%d :", g.sommets[i].id + 1);
+      printf("c%d :", g.sommets[i].id);
 
       for (j = 0; j < g.nb_aretes; j++) {
         if (g.aretes[j].id1 == i)
-          printf(" s%d", g.aretes[j].id2 + 1);
+          printf(" c%d", g.aretes[j].id2);
         else if (g.aretes[j].id2 == i)
-          printf(" s%d", g.aretes[j].id1 + 1);
+          printf(" c%d", g.aretes[j].id1);
       }
       printf("\n");
     }
+    for (i = 0; i < g.nb_aretes; i++) {
+      a = g.aretes[i];
+      printf("c%d-c%d : t%d, poids %d\n", a.id1, a.id2, a.type, a.poids);
+    }
+    printf("\n");
   }
 }

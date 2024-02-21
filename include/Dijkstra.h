@@ -9,5 +9,6 @@
 
 int minDistance(int dist[], bool visited[],int nb_sommets);
 void dijkstra(int** graph, int src, int shortestDistances[], int parents[],int nb_sommets);
+void test_dijkstra();
 
 #endif

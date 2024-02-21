@@ -97,7 +97,7 @@ void ajouterCycleDansIndex(indexCycles *index_cycles, int id_sommet, int id_cycl
 void freeIndexCycles(indexCycles *index_cycles);
 void printIndexCycles(indexCycles *index_cycles, int taille);
 
-grapheCycles initGrapheCycles(listeCycles *liste_c);
+grapheCycles initGrapheCycles(int chebi_id, listeCycles *liste_c);
 arete initArete(int id1, int id2, int type, int poids);
 void ajouterAreteDansListe(listeAretes **aretes, int *nb_aretes, int id1, int id2, int type, int poids);
 void ajouterAreteDansGraphe(grapheCycles *g, listeAretes *aretes, int nb_aretes);

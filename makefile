@@ -59,3 +59,5 @@ zip:
 	zip -r ${LADIR}.zip ${LADIR}
 	rm -rf ${LADIR}
 	ls -l
+
+test: mrproper all data run

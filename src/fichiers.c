@@ -7,51 +7,86 @@
 #include "structure.h"
 #include "utiles.h"
 #include "McKay.h"
+#include "grapheCycles.h"
+#include "parcours.h"
 
 void procedure(char *nom_dossier, int max_fichiers) {
   
-  listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers);
+  grapheMol graphe_mol;
+  listeCycles *cycles;
+  grapheCycles graphe_cycles;
+  int max_sommets;
+
+  listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers, &max_sommets);
+
+  printf("Max sommets : %d\n", max_sommets);
+
   if (max_fichiers > 0)
     printListeFichiers(fichiers);
   
   while (fichiers) {
 
-    grapheMol g = lireFichier(nom_dossier, fichiers->nom);
+    graphe_mol = lireFichier(nom_dossier, fichiers->nom);
 
     // TODO tester si g a plus de 3 sommets.
 
-    if (max_fichiers > 0) {
-      printGrapheMol(g);
-      printf("McKay\n");
-    }
+    if (max_fichiers > 0)
+      printGrapheMol(graphe_mol);
 
-    grapheCanonique(&g);
+    grapheCanonique(&graphe_mol);
 
     if (max_fichiers > 0)
-    printGrapheMol(g);
+      printGrapheMol(graphe_mol);
 
+    cycles = baseDeCyclesMinimale(graphe_mol);
+    if (max_fichiers > 0)
+      printListeCycles(cycles);
+    
+    graphe_cycles = transfoGrapheCycles(graphe_mol, cycles,  max_sommets);
+    if (max_fichiers > 0)
+      printGrapheCycles(graphe_cycles);
+
+    
+    freeListeCycles(cycles);
+    freeGrapheMol(graphe_mol);
+    freeGrapheCycles(graphe_cycles); // Temporaire
     fichiers = freeListeFichiers(fichiers);
-    freeGrapheMol(g);
   }
 }
  
  // Scanne le dossier nom_dossier et stocke le nom de max_fichiers fichiers dans une liste.
  // Si max_fichiers <= 0, stocke tous les fichiers du dossier (sauf ".", "..").
-listeFichiers* lireDossier(char *nom_dossier, int max_fichiers) {
+listeFichiers* lireDossier(char *nom_dossier, int max_fichiers, int *max_sommets) {
   
   struct dirent *dir;
   DIR *d = opendir(nom_dossier);
+  FILE *f;
   listeFichiers *fichiers = initListeFichiers();
+  int nb_sommets;
   int iter = 0;
+  *max_sommets = 0;
 
   if (d) {
     while ((dir = readdir(d)) != NULL && (iter < max_fichiers || max_fichiers <= 0)) {
 
       size_t taille_allouee = strlen(dir->d_name) ;
-      char *nom_fichier = (char *)malloc(taille_allouee);
+      char *nom_fichier = (char *)malloc(taille_allouee + 1);
       strcpy(nom_fichier, dir->d_name);
+
       if (strcmp(".", nom_fichier) && strcmp("..", nom_fichier)) {
+
         ajouterNomFichier(&fichiers, nom_fichier);
+        
+        char path[264];
+        sprintf(path, "%s/%s", nom_dossier, nom_fichier);
+        f = fopen(path, "r");
+        verifScan(fscanf(f, "%d", &nb_sommets), nom_fichier);
+        fclose(f);
+
+        if (*max_sommets < nb_sommets) {
+          *max_sommets = nb_sommets;
+        }
+
         iter++;
       }
     }

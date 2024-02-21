@@ -68,15 +68,12 @@ void triFusion(cycle cycles[], int taille) {
     mergeSort(cycles, 0, taille - 1);
 }
 
-void triParInsertionSommets(cycle c, int id_cycle, indexCycles *index_cycles) {
+void triParInsertionSommets(cycle c) {
     
     int *tab = c.sommets;
-    int n = c.taille;
     int i, j, id_courant;
 
-    ajouterCycleDansIndex(index_cycles, tab[0], id_cycle);
-
-    for (i = 1; i < n; i++) {
+    for (i = 1; i < c.taille; i++) {
         id_courant = tab[i];
         j = i - 1;
  
@@ -85,7 +82,5 @@ void triParInsertionSommets(cycle c, int id_cycle, indexCycles *index_cycles) {
             j = j - 1;
         }
         tab[j + 1] = id_courant;
-
-        ajouterCycleDansIndex(index_cycles, id_courant, id_cycle);
     }
 }

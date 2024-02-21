@@ -1,13 +1,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "Dijkstra.h"
+#include "fichiers.h"
+#include "utiles.h"
 #include "Horton.h"
-#include "McKay.h"
 
 int main(int argc, char** argv) {
-    testMcKay();
-    Test_Horton();
+    
+    // Test_Horton();
+
+    double debut, fin, sec;
+    debut = chrono();
+    procedure("data", 0);
+    fin = chrono();
+    sec = fin - debut;
+    tempsExecution(sec, "Temps d'exécution");
     
     return EXIT_SUCCESS;
 }

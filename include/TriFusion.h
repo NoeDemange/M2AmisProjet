@@ -7,6 +7,6 @@ void merge(cycle cycles[], int l, int m, int r);
 void mergeSort(cycle cycles[], int l, int r);
 void triFusion(cycle cycles[], int taille);
 
-void triParInsertionSommets(cycle c, int id_cycle, indexCycles *index_cycles);
+void triParInsertionSommets(cycle c);
 
 #endif

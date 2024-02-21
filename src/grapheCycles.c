@@ -3,21 +3,38 @@
 
 #include "grapheCycles.h"
 #include "TriFusion.h"
+#include "utiles.h"
 
+grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, int max_sommets) {
 
-// Marquer à 2 une arête dans la matrice d'adjacence de g
-// si elle appartient à un cycle.
+  int nb_aretes = 0;
+  listeAretes *aretes = NULL;
+  grapheCycles graphe_cycles = initGrapheCycles(graphe_mol.chebi_id, cycles);
+  indexCycles *index_cycles = initIndexCycles(max_sommets);
+
+  ajouterAreteCyclesDisjoints(cycles, &aretes, &nb_aretes, index_cycles, graphe_mol);
+  //printIndexCycles(index_cycles, 30);
+  ajouterAreteCyclesJoints(cycles, &aretes, &nb_aretes);
+  ajouterAreteDansGraphe(&graphe_cycles, aretes, nb_aretes);
+
+  return graphe_cycles;
+}
+
+// Marquer à 2 une arête dans la matrice d'adjacence de g si elle appartient à un cycle.
 // Les arêtes qui restent marquées à 1 sont des isthmes.
-// TODO le faire pendant l'exécution de l'algo d'Horton
-void marquerAretesCycles(grapheMol *g, listeCycles *liste_c) {
+// Remplie également un tableau d'index contenant les id des cycles auxquels appartient chaque sommet.
+// A la fin, index_cycles[i].cycles est un tableau qui contient :
+// + des -1 si le sommet i n'appartient à aucun cycle de cycles
+// + l'id des cycles sinon.
+void marquerAretesCycles(grapheMol *g, listeCycles *cycles, indexCycles *index_cycles) {
 
-  int i, j, n;
+  int i, j;
   int id1, id2;
   cycle c;
-  n = liste_c->nb_cycles;
   
-  for (i = 0; i < n; i++) {
-    c = liste_c->cycles[i];
+  for (i = 0; i < cycles->nb_cycles; i++) {
+
+    c = cycles->cycles[i];
     id1 = c.sommets[0];
     id2 = c.sommets[c.taille - 1];
     if (g->adjacence[id1][id2] || g->adjacence[id2][id1]) {
@@ -25,6 +42,9 @@ void marquerAretesCycles(grapheMol *g, listeCycles *liste_c) {
       g->adjacence[id2][id1] = 2;
     }
     for (j = 0; j < c.taille - 1; j++) {
+
+      ajouterCycleDansIndex(index_cycles, c.sommets[j], i);
+
       id1 = c.sommets[j];
       id2 = c.sommets[j + 1];
       if (g->adjacence[id1][id2] || g->adjacence[id2][id1]) {
@@ -32,22 +52,17 @@ void marquerAretesCycles(grapheMol *g, listeCycles *liste_c) {
         g->adjacence[id2][id1] = 2;
       }
     }
+    ajouterCycleDansIndex(index_cycles, c.sommets[c.taille - 1], i);
   }
 }
 
-// Trie les sommets de tous les cycles contenus dans liste_c par identifiant croissant.
-// Remplie également un tableau d'index contenant les id des cycles auxquels appartient chaque sommet.
-// A la fin, index_cycles[i].cycles est un tableau qui contient :
-// + des -1 si le sommet i n'appartient à aucun cycle de liste_c
-// + l'id des cycles sinon.
-void trierSommetsCycles(listeCycles *liste_c, indexCycles *index_cycles) {
+// Trie les sommets de tous les cycles contenus dans cycles par identifiant croissant.
+void trierSommetsCycles(listeCycles *cycles) {
 
-  int i, n;
-  n = liste_c->nb_cycles;
-
-  for (i = 0; i < n; i++) {
-    triParInsertionSommets(liste_c->cycles[i], i, index_cycles);
-  };
+  int i;
+  for (i = 0; i < cycles->nb_cycles; i++) {
+    triParInsertionSommets(cycles->cycles[i]);
+  }
 }
 
 // Nombre de sommets en commun entre les cycles c1 et c2
@@ -75,20 +90,42 @@ int intersectionCycles(cycle c1, cycle c2) {
   return intersection;
 }
 
-// Compare deux-à-deux les cycles dans liste_c, et ajoute une arête dans aretes
+// Compare deux-à-deux les cycles dans cycles, et ajoute une arête dans aretes
 // entre c1 et c2 si l'intersection des sommets des cycles est non vide.
 // nb_aretes sauvegarde le nombre d'arêtes ajoutées.
-void ajouterAreteCyclesJoints(listeCycles *liste_c, listeAretes **aretes, int *nb_aretes) {
+void ajouterAreteCyclesJoints(listeCycles *cycles, listeAretes **aretes, int *nb_aretes) {
 
   int i, j, sommets_communs, aretes_communes;
-  for (i = 0; i < liste_c->nb_cycles; i++) {
-    for (j = i + 1; j < liste_c->nb_cycles; j++) {
-      sommets_communs = intersectionCycles(liste_c->cycles[i], liste_c->cycles[j]);
+
+  trierSommetsCycles(cycles);
+
+  for (i = 0; i < cycles->nb_cycles; i++) {
+    for (j = i + 1; j < cycles->nb_cycles; j++) {
+      sommets_communs = intersectionCycles(cycles->cycles[i], cycles->cycles[j]);
       if (sommets_communs) {
         aretes_communes = sommets_communs - 1;
         ajouterAreteDansListe(aretes, nb_aretes, i, j, 1, aretes_communes);
       }
     }
+  }
+}
+
+void ajouterAreteEntreCycles(int id1, int id2, int taille, listeAretes **aretes, int *nb_aretes, indexCycles *index_cycles) {
+  
+  int i, j, c1, c2;
+  i = 0;
+    
+  // Pour tous les cycles auxquels appartient id2
+  while (i < SIZE_INDEX && index_cycles[id2].cycles[i] != -1) {
+    c2 = index_cycles[id2].cycles[i];
+    j = 0;
+    // Pour tous les cycles auxquels appartient id1
+    while (j < SIZE_INDEX && index_cycles[id1].cycles[j] != -1) {
+      c1 = index_cycles[id1].cycles[i];
+      ajouterAreteDansListe(aretes, nb_aretes, c1, c2, 2, taille);
+      j++;
+    }
+    i++;
   }
 }
 
@@ -101,26 +138,15 @@ void ajouterAreteCyclesJoints(listeCycles *liste_c, listeAretes **aretes, int *n
 // le sommet id_debut et tous ceux contenant le sommet id2, dans la liste aretes.
 // Le poids de l'arête correspond à la taille de la chaine parcourue.
 // Enfin, l'arête est marquée comme traitée (-1 dans la partie triangulaire inférieure de la matrice d'adjacence).
-void parcoursChaine(int id_debut, int id1, int id2, int taille, listeAretes **aretes, int *nb_aretes, indexCycles *index_cycles, grapheMol g) {
+void parcoursChaine(int id_debut, int id1, int id2, int taille, listeAretes **aretes, int *nb_aretes, indexCycles *index_cycles, grapheMol g, int max) {
 
+  if (max-- < 0) {
+    printf("Chebi %d :le parcours des isthmes prends trop de temps...\n", g.chebi_id);
+    return;
+  }
   // Si Sommet id2 appartient à un cycle
   if (index_cycles[id2].cycles[0] > -1) {
-    int i, j;
-    int c1, c2;
-
-    i = 0;
-    // Pour tous les cycles auxquels appartient id2
-    while (i < SIZE_INDEX && index_cycles[id2].cycles[i] != -1) {
-      c2 = index_cycles[id2].cycles[i];
-      j = 0;
-      // Pour tous les cycles auxquels appartient id_debut
-      while (j < SIZE_INDEX && index_cycles[id_debut].cycles[j] != -1) {
-        c1 = index_cycles[id_debut].cycles[i];
-        ajouterAreteDansListe(aretes, nb_aretes, c1, c2, 2, taille);
-        j++;
-      }
-      i++;
-    }
+    ajouterAreteEntreCycles(id_debut, id2, taille, aretes, nb_aretes, index_cycles);
   }
   // Sinon, aller voir tous les sommets voisins de id2
   else {
@@ -128,12 +154,12 @@ void parcoursChaine(int id_debut, int id1, int id2, int taille, listeAretes **ar
     // Pour tous les voisins différents de id1 et qui appartiennent à un isthme
     for (j = 0; j < id2; j++) {
       if (j!= id1 && g.adjacence[j][id2] == 1) {
-        parcoursChaine(id_debut, id2, j, taille + 1, aretes, nb_aretes, index_cycles, g);
+        parcoursChaine(id_debut, id2, j, taille + 1, aretes, nb_aretes, index_cycles, g, max);
       }
     }
     for (j = id2 + 1; j < g.nb_sommets; j++) {
       if (j!= id1 && g.adjacence[id2][j] == 1) {
-        parcoursChaine(id_debut, id2, j, taille + 1, aretes, nb_aretes, index_cycles, g);
+        parcoursChaine(id_debut, id2, j, taille + 1, aretes, nb_aretes, index_cycles, g, max);
       }
     } 
   }
@@ -154,11 +180,13 @@ void parcoursChaine(int id_debut, int id1, int id2, int taille, listeAretes **ar
 // index_cycles donne l'id des cycles auxquels appartient le sommet i, sinon -1.
 // La partie triangulaire inférieure de la matrice d'adjacence de g est utilisée
 // pour marquer (-1) les isthmes qui ont déjà été vus.
-void ajouterAreteCyclesDisjoints(listeCycles *liste_c, listeAretes **aretes, int *nb_aretes, indexCycles *index_cycles, grapheMol g) {
+void ajouterAreteCyclesDisjoints(listeCycles *cycles, listeAretes **aretes, int *nb_aretes, indexCycles *index_cycles, grapheMol g) {
 
-  int i, j;
+  int i, j, max = 100;
 
-  marquerAretesCycles(&g, liste_c);
+  marquerAretesCycles(&g, cycles, index_cycles);
+
+  // printGrapheMol(g);
 
   for (i = 0; i < g.nb_sommets; i++) {
     for (j = i + 1; j < g.nb_sommets; j++) {
@@ -166,15 +194,15 @@ void ajouterAreteCyclesDisjoints(listeCycles *liste_c, listeAretes **aretes, int
       if (g.adjacence[i][j] == 1 && g.adjacence[j][i] != -1) {
         // Chaine de taille 1 entre deux cycles
         if (index_cycles[i].cycles[0] > -1 && index_cycles[j].cycles[0] > -1) {
-          ajouterAreteDansListe(aretes, nb_aretes, i, j, 2, 1);
+          ajouterAreteEntreCycles(i, j, 1, aretes, nb_aretes, index_cycles);
         }
         // Sommet i appartient à un cycle
         else if (index_cycles[i].cycles[0] > -1 && index_cycles[j].cycles[0] == -1) {
-          parcoursChaine(i, i, j, 1, aretes, nb_aretes, index_cycles, g);
+          parcoursChaine(i, i, j, 1, aretes, nb_aretes, index_cycles, g, max);
         }
         // Sommet j appartient à un cycle
         else if (index_cycles[i].cycles[0] == -1 && index_cycles[j].cycles[0] > -1) {
-          parcoursChaine(j, j, i, 1, aretes, nb_aretes, index_cycles, g);
+          parcoursChaine(j, j, i, 1, aretes, nb_aretes, index_cycles, g, max);
         }
       }
     }

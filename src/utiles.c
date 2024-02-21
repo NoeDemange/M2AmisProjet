@@ -15,7 +15,7 @@ double chrono() {
 	return date_courante - date_deb;
 }
 
-void tempsExecution(double sec) {
+void tempsExecution(double sec, char *info) {
 
   int h, m;
   double s;
@@ -23,7 +23,7 @@ void tempsExecution(double sec) {
   m = (sec -(3600*h))/60;
   s = (sec -(3600*h)-(m*60));
 	
-  printf("Temps d'exécution - %dh:%dm:%fs\n",h,m,s);	
+  printf("%s - %dh:%dm:%fs\n",info, h, m, s);	
 }
 
 void verifScan(int valeur, char *nom_fichier) {

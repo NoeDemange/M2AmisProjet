@@ -13,7 +13,7 @@
 #define AUCUNE_LIAISON (-1024)
 #define date 50
 
-//#define TEST
+#define TEST
 
 typedef struct grapheMol {
   int chebi_id;
@@ -23,14 +23,14 @@ typedef struct grapheMol {
 } grapheMol;
 
 typedef struct couple {
-	int a1;
-	int a2;
+	int id1;
+	int id2;
 }couple;
 
-typedef struct type_arete {
+typedef struct typeArete {
 	int type;
 	int poids;
-}type_arete;
+}typeArete;
 
 typedef struct sommet {
   int id;
@@ -43,6 +43,11 @@ typedef struct arete {
   int type;
   int poids;
 } arete;
+
+typedef struct grapheSim {
+  int nb_sommets;
+  int** adjacence;
+} grapheSim;
 
 typedef struct listeAretes {
   arete a;
@@ -62,10 +67,11 @@ typedef struct listeCycles {
 
 typedef struct grapheCycles {
   int chebi_id;
+  char *types;
   int nb_sommets;
   int nb_aretes;
   sommet *sommets;
-  arete *aretes;
+  typeArete **types_aretes;
 } grapheCycles;
 
 typedef struct indexCycles {
@@ -117,7 +123,7 @@ void ajouterCycleDansIndex(indexCycles *index_cycles, int id_sommet, int id_cycl
 void freeIndexCycles(indexCycles *index_cycles);
 void printIndexCycles(indexCycles *index_cycles, int taille);
 
-grapheCycles initGrapheCycles(int chebi_id, listeCycles *liste_c);
+grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, char *types);
 arete initArete(int id1, int id2, int type, int poids);
 void ajouterAreteDansListe(listeAretes **aretes, int *nb_aretes, int id1, int id2, int type, int poids);
 void ajouterAreteDansGraphe(grapheCycles *g, listeAretes *aretes, int nb_aretes);

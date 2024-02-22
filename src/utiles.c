@@ -1,5 +1,7 @@
 #include "utiles.h"
 
+
+
 double chrono() {
   
 	struct timeval tv;
@@ -32,6 +34,21 @@ void verifScan(int valeur, char *chebi_id) {
   }
 }
 
+int absolue(int a) {
+
+	return ( a > 0) ? a : -a;
+}
+
+int min( int a , int b) {
+	
+	return (a < b) ? a : b;
+}
+
+int minTrois(int a, int b, int c) {
+
+  return a < b ? (a < c ? a : c) : (b < c ? b : c);
+}
+
 void printTab(int *tab, int n) {
     
     int i;
@@ -52,7 +69,8 @@ void printMatrice(int **matrice, int n, int m) {
   printf("\n");
 }
 
-void createFolder(const char *path) {
+void creerDossier(const char *path) {
+    
     #ifdef _WIN32
         mkdir(path);
     #else
@@ -60,15 +78,16 @@ void createFolder(const char *path) {
     #endif
 }
 
-void generate_dot_file(grapheCycles *graph) {
-    char foldername[100];
-    sprintf(foldername, "graphs");
-    createFolder(foldername);
+void genererFichierDot(grapheCycles *g) {
+    
+    char nom_dossier[100];
+    sprintf(nom_dossier, "graphs");
+    creerDossier(nom_dossier);
 
-    char filename[100];
-    sprintf(filename, "graphs/%d.dot", graph->chebi_id);
+    char nom_fichier[100];
+    sprintf(nom_fichier, "graphs/%d.dot", g->chebi_id);
 
-    FILE *fp = fopen(filename, "w");
+    FILE *fp = fopen(nom_fichier, "w");
     if (fp == NULL) {
         printf("Error opening file.\n");
         return;
@@ -78,16 +97,19 @@ void generate_dot_file(grapheCycles *graph) {
     fprintf(fp, "graph G {\n");
 
     // Write vertices
-    for (int i = 0; i < graph->nb_sommets; i++) {
-        fprintf(fp, "    %d [label=\"%d\", shape=circle];\n", graph->sommets[i].id, graph->sommets[i].taille);
+    for (int i = 0; i < g->nb_sommets; i++) {
+        fprintf(fp, "    %d [label=\"%d\", shape=circle];\n", g->sommets[i].id, g->sommets[i].taille);
     }
 
     // Write edges
-    for (int i = 0; i < graph->nb_aretes; i++) {
-      if(graph->aretes[i].type == 1)
-        fprintf(fp, "    %d -- %d [label=\"%d\", color=blue];\n", graph->aretes[i].id1, graph->aretes[i].id2, graph->aretes[i].poids);
-      if(graph->aretes[i].type == 2)
-        fprintf(fp, "    %d -- %d [label=\"%d\", color=green];\n", graph->aretes[i].id1, graph->aretes[i].id2, graph->aretes[i].poids);
+    char *couleur;
+    for (int i = 0; i < g->nb_sommets; i++) {
+        for (int j = i + 1; j < g->nb_sommets; j++) {
+            if (g->types_aretes[i][j].type != AUCUNE_LIAISON) {
+                couleur = (g->types_aretes[i][j].type == 1) ? "blue" : "green";
+                fprintf(fp, "    %d -- %d [label=\"%d\", color=%s];\n", i, j, g->types_aretes[i][j].poids, couleur);
+            }
+        }
     }
 
     // Write the footer for the DOT file
@@ -97,14 +119,17 @@ void generate_dot_file(grapheCycles *graph) {
 }
 
 // Fonction pour écrire la matrice dans un fichier CSV
-void writeMatrixToCSV(int n, float **matrix,grapheCycles *liste_GC, const char* filename) {
-    FILE* fp = fopen(filename, "w");
+void ecrireMatriceDansCSV(int n, float **matrice, grapheCycles *liste_GC, const char *nom_fichier) {
+    
+    FILE* fp = fopen(nom_fichier, "w");
+
     if (fp == NULL) {
         printf("Erreur lors de l'ouverture du fichier.");
         return;
     }
 
     fprintf(fp, ";");
+
     for (int i = 0; i < n; i++) {//écrire nom fichier
         fprintf(fp, "%d", liste_GC[i].chebi_id);
             if (i < n - 1) {
@@ -117,15 +142,16 @@ void writeMatrixToCSV(int n, float **matrix,grapheCycles *liste_GC, const char* 
     for (int i = 0; i < n; i++) {
         fprintf(fp, "%d;", liste_GC[i].chebi_id);
         for (int j = 0; j < n; j++) {
-          if(i==j){fprintf(fp, "%f", 1.0);}
-          else if(i<j){fprintf(fp, "%f", matrix[j-1][i]);}
-          else{fprintf(fp, "%f", matrix[i-1][j]);}
-            if (j < n - 1) {
+            if (i == j)
+                fprintf(fp, "%f", 1.0);
+            else if (i < j)
+                fprintf(fp, "%f", matrice[j-1][i]);
+            else
+                fprintf(fp, "%f", matrice[i-1][j]);
+            if (j < n - 1)
                 fprintf(fp, ";");
-            }
         }
         fprintf(fp, "\n");
     }
-
     fclose(fp);
 }

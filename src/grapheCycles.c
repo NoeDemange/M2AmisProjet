@@ -4,7 +4,7 @@ grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, inde
 
   int nb_aretes = 0;
   listeAretes *aretes = NULL;
-  grapheCycles graphe_cycles = initGrapheCycles(graphe_mol.chebi_id, cycles);
+  grapheCycles graphe_cycles = initGrapheCycles(cycles, graphe_mol.chebi_id, graphe_mol.types);
 
   ajouterAreteCyclesDisjoints(cycles, &aretes, &nb_aretes, index_cycles, graphe_mol);
   //printIndexCycles(index_cycles, 30);

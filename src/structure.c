@@ -297,19 +297,20 @@ void printIndexCycles(indexCycles *index_cycles, int taille) {
    printf("\n");
 }
 
-grapheCycles initGrapheCycles(int chebi_id, listeCycles *liste_c) {
+grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, char *types) {
 
   grapheCycles g;
   g.chebi_id = chebi_id;
-  g.nb_sommets = liste_c->nb_cycles;
+  g.types = types;
+  g.nb_sommets = cycles->nb_cycles;
   g.nb_aretes = 0;
-  g.aretes = NULL;
-  g.sommets = malloc(liste_c->nb_cycles * sizeof(sommet));
+  g.types_aretes = NULL;
+  g.sommets = malloc(cycles->nb_cycles * sizeof(sommet));
   int i;
 
-  for (i = 0; i < liste_c->nb_cycles; i++) {
+  for (i = 0; i < cycles->nb_cycles; i++) {
     g.sommets[i].id = i;
-    g.sommets[i].taille = liste_c->cycles[i].taille;
+    g.sommets[i].taille = cycles->cycles[i].taille;
   }
 
   return g;
@@ -358,72 +359,61 @@ void freeListeAretes(listeAretes *aretes) {
 // et libère la mémoire allouée à la liste.  
 void ajouterAreteDansGraphe(grapheCycles *g, listeAretes *aretes, int nb_aretes) {
 
-  g->nb_aretes = nb_aretes;
-  g->aretes = malloc(nb_aretes * sizeof(arete));
-  int i = 0;
+  int i, j;
+  g->types_aretes = malloc(g->nb_sommets * sizeof(typeArete*));
 
+  for (i = 0; i < g->nb_sommets; i++) {
+    g->types_aretes[i] = malloc(g->nb_sommets * sizeof(typeArete));
+
+    for (j = 0; j < g->nb_sommets; j++) {	
+			g->types_aretes[i][j].type = AUCUNE_LIAISON;
+			g->types_aretes[i][j].poids = AUCUNE_LIAISON;
+		}
+  }
+
+  g->nb_aretes = nb_aretes;
+  
   listeAretes *temp;
   while (aretes) {
     temp = aretes;
     aretes = aretes->suiv;
-    g->aretes[i] = temp->a;
+
+    g->types_aretes[temp->a.id1][temp->a.id2].poids = temp->a.poids;
+    g->types_aretes[temp->a.id2][temp->a.id1].poids = temp->a.poids;
+    g->types_aretes[temp->a.id1][temp->a.id2].type = temp->a.type;
+    g->types_aretes[temp->a.id2][temp->a.id1].type = temp->a.type;
+    
     free(temp);
-    i++;
   }
 }
 
 void freeGrapheCycles(grapheCycles g) {
 
-  free(g.aretes);
+  int i;
   free(g.sommets);
+  for (i = 0; i < g.nb_sommets; i++) {
+    free(g.types_aretes[i]);
+  }
+  free(g.types_aretes);
+  free(g.types);
 }
 
 void printGrapheCycles(grapheCycles g) {
 
-  if (g.aretes) {
-    int i, j;
-    int *ligne_cycle = malloc(g.nb_sommets * sizeof(int));
-    printf("Graphe de cycles :\n");
-    for (i = 0; i < g.nb_sommets; i++) {
-      for (j = 0; j < g.nb_sommets; j++) 
-        ligne_cycle[j] = 0;
+  int i, j;
 
-      for (j = 0; j < g.nb_aretes; j++) {
-        if (g.aretes[j].id1 == i) {
-          ligne_cycle[g.aretes[j].id2] = 1;
-        }
-        else if (g.aretes[j].id2 == i) {
-          ligne_cycle[g.aretes[j].id1] = 1;
-        }
-      }
-      for (j = 0; j < g.nb_sommets; j++)
-          printf("%d ", ligne_cycle[j]);
-        printf("\n");
-    }
-    printf("taille des cycles\n");
+  printf("Graphe de cycles (t,p) :\n");
+  if (g.types_aretes) {
     for (i = 0; i < g.nb_sommets; i++) {
-      printf("%d ", g.sommets[i].taille);
-    }
-    printf("\n");
-    arete a;
-    printf("Liste d'adjacence\n");
-    for (i = 0; i < g.nb_sommets; i++) {
-      printf("%d :", g.sommets[i].id);
-
-      for (j = 0; j < g.nb_aretes; j++) {
-        if (g.aretes[j].id1 == i)
-          printf(" %d", g.aretes[j].id2);
-        else if (g.aretes[j].id2 == i)
-          printf(" %d", g.aretes[j].id1);
+      for (j = 0; j < g.nb_sommets; j++) {
+        printf("%d,%d ", g.types_aretes[i][j].type, g.types_aretes[i][j].poids);
       }
       printf("\n");
     }
-    printf("[arête : type, poids]\n");
-    for (i = 0; i < g.nb_aretes; i++) {
-      a = g.aretes[i];
-      printf("%d-%d : %d, %d\n", a.id1, a.id2, a.type, a.poids);
-    }
-    printf("\n");
-    free(ligne_cycle);
   }
+  printf("Taille des cycles\n");
+    for (i = 0; i < g.nb_sommets; i++) {
+      printf("%d ", g.sommets[i].taille);
+    }
+    printf("\n");  
 }

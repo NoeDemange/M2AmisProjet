@@ -1,10 +1,5 @@
 #include "Levenshtein.h"
 
-int minTrois(int a, int b, int c) {
-
-  return a < b ? (a < c ? a : c) : (b < c ? b : c);
-}
-
 int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2) {
 
   char *chaine1, *chaine2;

@@ -20,7 +20,7 @@ void test(char *nom_dossier, char *chebi_id, char *chebi_id1) {
   graphe_cycles = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
   //printGrapheCycles(graphe_cycles);
 
-  generate_dot_file(&graphe_cycles);
+  genererFichierDot(&graphe_cycles);
 
   grapheMol graphe_mol1;
   listeCycles *cycles1;
@@ -56,85 +56,74 @@ void procedure(char *nom_dossier, int max_fichiers) {
 
   grapheMol graphe_mol;
   listeCycles *cycles;
-  //grapheCycles graphe_cycles;
-  int max_sommets;
+  grapheCycles *liste_GC;
+  int max_sommets, pos_fic;
+  int i ,j;
   int nb_fichiers = 0;
 
   listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers, &max_sommets, &nb_fichiers);
   indexCycles *index_cycles = initIndexCycles(max_sommets);
 
-  grapheCycles *liste_GC = malloc(nb_fichiers * sizeof(grapheCycles));
-
-  //printf("Max sommets : %d\n", max_sommets);
-
-  // if (max_fichiers > 0)
-  //   printListeFichiers(fichiers);
+  liste_GC = malloc(nb_fichiers * sizeof(grapheCycles));
   
-  int pos_fic = 0;
+  pos_fic = 0;
   while (fichiers) {
 
     graphe_mol = lireFichier(nom_dossier, fichiers->nom);
-    //printf("%d",graphe_mol.chebi_id);
-    // TODO tester si g a plus de 3 sommets.
-
-    // if (max_fichiers > 0)
-    //   printGrapheMol(graphe_mol);
-
+    
+    if (graphe_mol.nb_sommets < 3) {
+      freeGrapheMol(graphe_mol);
+      fichiers = freeListeFichiers(fichiers);
+      continue;
+    }
     grapheCanonique(&graphe_mol);
 
-    // if (max_fichiers > 0)
-    //   printGrapheMol(graphe_mol);
-
     cycles = baseDeCyclesMinimale(graphe_mol);
-    // if (max_fichiers > 0)
-    //   printListeCycles(cycles);
     
     liste_GC[pos_fic] = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
-    // if (max_fichiers > 0)
-    //   printGrapheCycles(graphe_cycles);
 
-    //generate_dot_file(&graphe_cycles);
     resetIndexCycles(index_cycles, graphe_mol.nb_sommets);
     
     freeTousListeCycles(cycles);
     freeGrapheMol(graphe_mol);
-    //freeGrapheCycles(graphe_cycles); // Temporaire
     fichiers = freeListeFichiers(fichiers);
 
     pos_fic++;
   }
   freeIndexCycles(index_cycles);
 
-  float **matRes = (float **)malloc((nb_fichiers-1) * sizeof(float*));
-  if(matRes==NULL){
+  float **resultats = malloc((nb_fichiers - 1) * sizeof(float*));
+
+  if (resultats == NULL) {
     printf("ERROR MATRICE RESULTATS\n");
     exit(666);
   }
-  for(int i=0; i<nb_fichiers-1; i++){
-    matRes[i] = (float *)malloc((i+1) * sizeof(float));
-    if(matRes[i]==NULL){
+  for (i = 0; i < nb_fichiers - 1; i++) {
+    resultats[i] = malloc((i + 1) * sizeof(float));
+    if (resultats[i] == NULL) {
       printf("ERROR MATRICE RESULTATS\n");
       exit(666);
     }
   }
-
  
-  for(int i = 1; i<nb_fichiers; i++){
+  for (i = 0; i < nb_fichiers; i++) {
     printf("Calcul de similarité pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
-    for(int j = 0; j<i; j++){
+    for (j = i + 1; j < nb_fichiers; j++) {
      float sim = similarite(liste_GC[i], liste_GC[j]);
-      matRes[i-1][j] = sim;
-      //printf("sim %f; mat %f \n", sim, matRes[i-1][j]);
+      resultats[j - 1][i] = sim;
+      // printf("sim %f; mat %f \n", sim, resultats[j-1][i]);
     }
   }
+  
+  ecrireMatriceDansCSV(nb_fichiers, resultats, liste_GC, "matRes.csv");
 
- writeMatrixToCSV(nb_fichiers,matRes, liste_GC, "matRes.csv");
-
-  for(int i = 0; i<nb_fichiers; i++){
+  freeGrapheCycles(liste_GC[0]);
+  for (i = 1; i < nb_fichiers; i++) {
+    free(resultats[i - 1]);
     freeGrapheCycles(liste_GC[i]);
   }
+  free(resultats);
   free(liste_GC);
-
 }
  
  // Scanne le dossier nom_dossier et stocke le nom de max_fichiers fichiers dans une liste.
@@ -167,6 +156,9 @@ listeFichiers* lireDossier(char *nom_dossier, int max_fichiers, int *max_sommets
         }
 
         (*iter)++;
+      }
+      else {
+        free(nom_fichier);
       }
     }
     closedir(d);
@@ -240,6 +232,7 @@ grapheMol lireFichier(char* nom_dossier, char *nom_fichier) {
 
     verifScan(fscanf(f, "%d", &nb_sommets), strtok(nom_fichier, "_"));
   #endif
+
   g = initGrapheMol(nb_sommets, atoi(nom_fichier));
 
   types = malloc(nb_sommets + 1 * sizeof(char));

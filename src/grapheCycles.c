@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "grapheCycles.h"
-#include "TriFusion.h"
-#include "utiles.h"
 
 grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, indexCycles *index_cycles) {
 
@@ -121,6 +116,7 @@ void ajouterAreteEntreCycles(int id1, int id2, int taille, listeAretes **aretes,
     // Pour tous les cycles auxquels appartient id1
     while (j < SIZE_INDEX && index_cycles[id1].cycles[j] != -1) {
       c1 = index_cycles[id1].cycles[j];
+      c1 = index_cycles[id1].cycles[j];
       ajouterAreteDansListe(aretes, nb_aretes, c1, c2, 2, taille);
       j++;
     }
@@ -184,8 +180,6 @@ void ajouterAreteCyclesDisjoints(listeCycles *cycles, listeAretes **aretes, int 
   int i, j, max = 200;
 
   marquerAretesCycles(&g, cycles, index_cycles);
-
- // printGrapheMol(g);
 
   for (i = 0; i < g.nb_sommets; i++) {
     for (j = i + 1; j < g.nb_sommets; j++) {

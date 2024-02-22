@@ -1,5 +1,4 @@
-#include "nauty.h"
-#include "structure.h"
+#include "McKay.h"
 
 int* numerotationCanonique(grapheMol *graphe_mol) {
 
@@ -55,6 +54,7 @@ void grapheCanonique(grapheMol *graphe_mol) {
 
   int n = graphe_mol->nb_sommets;
   int i,j, premier = -1;
+  int c1, c2;
 
   int *perm = numerotationCanonique(graphe_mol);
 
@@ -79,6 +79,9 @@ void grapheCanonique(grapheMol *graphe_mol) {
     temp1[j] = graphe_mol->adjacence[perm[premier]][j];
     graphe_mol->adjacence[perm[premier]][j] = graphe_mol->adjacence[premier][j];
   }
+  // Permutation des atomes (caractères)
+  c1 = graphe_mol->types[perm[premier]];
+  graphe_mol->types[perm[premier]] = graphe_mol->types[premier]; 
 
   i = perm[premier];
   // Toutes les autres lignes
@@ -88,6 +91,10 @@ void grapheCanonique(grapheMol *graphe_mol) {
       graphe_mol->adjacence[perm[i]][j] = temp1[j];
       temp1[j] = temp2[j];
     }
+    c2 = graphe_mol->types[perm[i]];
+    graphe_mol->types[perm[i]] = c1;
+    c1 = c2;
+
     i = perm[i];
   }
 

@@ -1,6 +1,11 @@
 #ifndef UTILES_H
 #define UTILES_H
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+
 #include "structure.h"
 
 double chrono();

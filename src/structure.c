@@ -1,16 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "structure.h"
 #include "utiles.h"
-#include "McKay.h"
-#include "Horton.h"
 
 grapheMol initGrapheMol(int nb_sommets, int chebi_id) {
 
   grapheMol g;
   g.nb_sommets = nb_sommets;
   g.chebi_id = chebi_id;
+  g.types = NULL;
   g.adjacence = malloc(nb_sommets * sizeof(int*));
 
   for(int i = 0; i < nb_sommets; i++) {
@@ -34,10 +30,12 @@ void resetGrapheMol(grapheMol g) {
 
 void freeGrapheMol(grapheMol g) {
 
-  for(int i = 0; i < g.nb_sommets; i++) {
-    free(g.adjacence[i]);
+  if (g.adjacence) {
+    for(int i = 0; i < g.nb_sommets; i++) {
+      free(g.adjacence[i]);
+    }
+    free(g.adjacence);
   }
-  free(g.adjacence);
 }
 
 void printGrapheMol(grapheMol g) {
@@ -49,6 +47,7 @@ void printGrapheMol(grapheMol g) {
     }
     printf("\n");
   }
+  printf("%s\n", g.types);
   printf("\n");
 }
 
@@ -156,13 +155,6 @@ void printFile(file *file) {
     }
 }
 
-cycle* initCycle() {
-    
-    cycle *c = malloc(sizeof(cycle));
-    c->sommets = NULL;
-    return c;
-}
-
 listeCycles* initListeCycles() {
 
     listeCycles *cycles = malloc(sizeof(listeCycles));
@@ -193,6 +185,22 @@ void freeListeCycles(listeCycles *cycles) {
 
   if (cycles) {
     if (cycles->cycles) {
+      free(cycles->cycles);
+    }
+    free(cycles);
+  }
+}
+
+void freeTousListeCycles(listeCycles *cycles) {
+
+  if (cycles) {
+    if (cycles->cycles) {
+      int i;
+      for (i = 0; i < cycles->nb_cycles; i++) {
+        if (cycles->cycles[i].sommets) {
+          free(cycles->cycles[i].sommets);
+        }
+      }
       free(cycles->cycles);
     }
     free(cycles);
@@ -273,19 +281,20 @@ void freeIndexCycles(indexCycles *index_cycles) {
 void printIndexCycles(indexCycles *index_cycles, int taille) {
 
   int i, j;
-
+  printf("Index cycles (taille %d) :\n", taille);
   if (taille <= 0 || taille > index_cycles->taille) {
     taille = index_cycles->taille;
   }
   for (i = 0; i < taille; i++) {
     printf("%d :", i);
     j = 0;
-    while (j < SIZE_INDEX && index_cycles[i].cycles[j] != -1) {
-      printf(" c%d", index_cycles[i].cycles[j]);
+    while (j < SIZE_INDEX && index_cycles[i].cycles[j] /*!= -1*/) {
+      printf(" %d", index_cycles[i].cycles[j]);
       j++;
     }
     printf("\n");
   }
+   printf("\n");
 }
 
 grapheCycles initGrapheCycles(int chebi_id, listeCycles *liste_c) {

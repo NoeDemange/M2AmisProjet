@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/time.h>
-#include <sys/stat.h>
 #include "utiles.h"
 
 double chrono() {
@@ -28,10 +24,10 @@ void tempsExecution(double sec, char *info) {
   printf("%s - %dh:%dm:%fs\n",info, h, m, s);	
 }
 
-void verifScan(int valeur, char *nom_fichier) {
+void verifScan(int valeur, char *chebi_id) {
   
   if (valeur != 1) {
-    printf("Erreur à la lecture du fichier %s\n", nom_fichier);
+    printf("Erreur de lecture du fichier pour la molécule %s.\n", chebi_id);
     exit(EXIT_FAILURE);
   }
 }

@@ -9,7 +9,11 @@
 // auxquels appartient un sommet i.
 #define SIZE_INDEX 20
 
-#define TEST
+//similarité
+#define AUCUNE_LIAISON (-1024)
+#define date 50
+
+//#define TEST
 
 typedef struct grapheMol {
   int chebi_id;
@@ -17,6 +21,16 @@ typedef struct grapheMol {
   int nb_sommets;
   int **adjacence;
 } grapheMol;
+
+typedef struct couple {
+	int a1;
+	int a2;
+}couple;
+
+typedef struct type_arete {
+	int type;
+	int poids;
+}type_arete;
 
 typedef struct sommet {
   int id;

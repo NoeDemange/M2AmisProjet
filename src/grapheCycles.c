@@ -116,6 +116,7 @@ void ajouterAreteEntreCycles(int id1, int id2, int taille, listeAretes **aretes,
     // Pour tous les cycles auxquels appartient id1
     while (j < SIZE_INDEX && index_cycles[id1].cycles[j] != -1) {
       c1 = index_cycles[id1].cycles[j];
+      c1 = index_cycles[id1].cycles[j];
       ajouterAreteDansListe(aretes, nb_aretes, c1, c2, 2, taille);
       j++;
     }

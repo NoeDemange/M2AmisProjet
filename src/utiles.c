@@ -79,16 +79,53 @@ void generate_dot_file(grapheCycles *graph) {
 
     // Write vertices
     for (int i = 0; i < graph->nb_sommets; i++) {
-        fprintf(fp, "    %d [label=\"%d\"];\n", graph->sommets[i].id, graph->sommets[i].taille);
+        fprintf(fp, "    %d [label=\"%d\", shape=circle];\n", graph->sommets[i].id, graph->sommets[i].taille);
     }
 
     // Write edges
     for (int i = 0; i < graph->nb_aretes; i++) {
-        fprintf(fp, "    %d -- %d [label=\"%d\"];\n", graph->aretes[i].id1, graph->aretes[i].id2, graph->aretes[i].poids);
+      if(graph->aretes[i].type == 1)
+        fprintf(fp, "    %d -- %d [label=\"%d\", color=blue];\n", graph->aretes[i].id1, graph->aretes[i].id2, graph->aretes[i].poids);
+      if(graph->aretes[i].type == 2)
+        fprintf(fp, "    %d -- %d [label=\"%d\", color=green];\n", graph->aretes[i].id1, graph->aretes[i].id2, graph->aretes[i].poids);
     }
 
     // Write the footer for the DOT file
     fprintf(fp, "}\n");
+
+    fclose(fp);
+}
+
+// Fonction pour écrire la matrice dans un fichier CSV
+void writeMatrixToCSV(int n, float **matrix,grapheCycles *liste_GC, const char* filename) {
+    FILE* fp = fopen(filename, "w");
+    if (fp == NULL) {
+        printf("Erreur lors de l'ouverture du fichier.");
+        return;
+    }
+
+    fprintf(fp, ";");
+    for (int i = 0; i < n; i++) {//écrire nom fichier
+        fprintf(fp, "%d", liste_GC[i].chebi_id);
+            if (i < n - 1) {
+                fprintf(fp, ";");
+            }
+    }
+    fprintf(fp, "\n");
+
+    // Écrire la matrice dans le fichier CSV
+    for (int i = 0; i < n; i++) {
+        fprintf(fp, "%d;", liste_GC[i].chebi_id);
+        for (int j = 0; j < n; j++) {
+          if(i==j){fprintf(fp, "%f", 1.0);}
+          else if(i<j){fprintf(fp, "%f", matrix[j-1][i]);}
+          else{fprintf(fp, "%f", matrix[i-1][j]);}
+            if (j < n - 1) {
+                fprintf(fp, ";");
+            }
+        }
+        fprintf(fp, "\n");
+    }
 
     fclose(fp);
 }

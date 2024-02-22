@@ -7,3 +7,4 @@ data/*
 nauty/nauty.h
 nauty/nauty.a
 graphs/*
+*.csv

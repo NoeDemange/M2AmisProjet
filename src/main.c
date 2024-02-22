@@ -11,14 +11,14 @@ int main(int argc, char** argv) {
 
     double debut, fin, sec;
     debut = chrono();
-    procedure("data", 0);
+    procedure("data", 10);
     fin = chrono();
     sec = fin - debut;
     tempsExecution(sec, "Temps d'exécution");
 
     #else
     
-    test("data", "77867");
+    test("data", "32296", "32296");
 
     #endif
     

@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 
     double debut, fin, sec;
     debut = chrono();
-    procedure("data", 1000);
+    procedure("data", 10);
     fin = chrono();
     sec = fin - debut;
     tempsExecution(sec, "Temps d'exécution");

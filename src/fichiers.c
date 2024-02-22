@@ -1,12 +1,6 @@
 #include "fichiers.h"
-#include "structure.h"
-#include "utiles.h"
-#include "McKay.h"
-#include "grapheCycles.h"
-#include "parcours.h"
-#include "similarite.h"
 
-void test(char *nom_dossier, char *nom_fichier, char *nom_fichier1) {
+void test(char *nom_dossier, char *chebi_id, char *chebi_id1) {
 
   grapheMol graphe_mol;
   listeCycles *cycles;
@@ -33,7 +27,7 @@ void test(char *nom_dossier, char *nom_fichier, char *nom_fichier1) {
   grapheCycles graphe_cycles1;
   indexCycles *index_cycles1;
 
-  graphe_mol1 = lireFichier(nom_dossier, nom_fichier1);
+  graphe_mol1 = lireFichier(nom_dossier, chebi_id1);
   index_cycles1 = initIndexCycles(graphe_mol1.nb_sommets);
   // //printGrapheMol(graphe_mol);
 
@@ -47,27 +41,6 @@ void test(char *nom_dossier, char *nom_fichier, char *nom_fichier1) {
 
   float sim = similarite(graphe_cycles,graphe_cycles1);
   printf("SIMILARITE : %f\n", sim);
-
-  grapheMol graphe_mol1;
-  listeCycles *cycles1;
-  grapheCycles graphe_cycles1;
-  indexCycles *index_cycles1;
-
-  graphe_mol1 = lireFichier(nom_dossier, nom_fichier1);
-  index_cycles1 = initIndexCycles(graphe_mol1.nb_sommets);
-  // //printGrapheMol(graphe_mol);
-
-  grapheCanonique(&graphe_mol1);
-  // //printGrapheMol(graphe_mol);
-
-  cycles1 = baseDeCyclesMinimale(graphe_mol1);
-  // //printListeCycles(cycles);
-    
-  graphe_cycles1 = transfoGrapheCycles(graphe_mol1, cycles1, index_cycles1);
-
-  float sim = similarite(graphe_cycles,graphe_cycles1);
-  printf("SIMILARITE : %f\n", sim);
-
   
   freeGrapheMol(graphe_mol);
   freeGrapheCycles(graphe_cycles);
@@ -147,7 +120,7 @@ void procedure(char *nom_dossier, int max_fichiers) {
 
  
   for(int i = 1; i<nb_fichiers; i++){
-    print("Calcul de similarité pour %d : CHEBI:%d",i, liste_GC[i].chebi_id);
+    printf("Calcul de similarité pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
     for(int j = 0; j<i; j++){
      float sim = similarite(liste_GC[i], liste_GC[j]);
       matRes[i-1][j] = sim;

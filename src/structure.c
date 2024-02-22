@@ -297,10 +297,11 @@ void printIndexCycles(indexCycles *index_cycles, int taille) {
    printf("\n");
 }
 
-grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, char *types) {
+grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, int nb_atomes, char *types) {
 
   grapheCycles g;
   g.chebi_id = chebi_id;
+  g.nb_atomes = nb_atomes;
   g.types = types;
   g.nb_sommets = cycles->nb_cycles;
   g.nb_aretes = 0;

@@ -81,7 +81,7 @@ grapheSim* produitGraphesCycles(grapheCycles g1, grapheCycles g2) {
 	}
 	free(couples);
 	
-	grapheSim *g  = malloc(sizeof(struct grapheSim));
+	grapheSim *g  = malloc(sizeof(grapheSim));
   g->nb_sommets = taille;
   g->adjacence = adjacence;
 
@@ -141,11 +141,11 @@ float similarite(grapheCycles g1, grapheCycles g2) {
 
 	grapheSim *graphe_produit = produitGraphesCycles(g1, g2);
 
-	int taille = graphe_produit->nb_sommets;
-
-	if (taille == 0) {
+	if (graphe_produit == NULL) {
 		return 0;
 	}
+
+	int taille = graphe_produit->nb_sommets;
 
 	int* clique = cliqueMax(graphe_produit, (long)date);
 

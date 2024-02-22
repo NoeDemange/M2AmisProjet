@@ -13,6 +13,7 @@
 #include "grapheCycles.h"
 #include "parcours.h"
 #include "similarite.h"
+#include "Levenshtein.h"
 
 void test(char *nom_dossier, char *chebi_id, char *chebi_id1);
 void procedure(char *nom_dossier, int max_fichiers);

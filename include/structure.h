@@ -10,6 +10,7 @@
 
 typedef struct grapheMol {
   int chebi_id;
+  char *types;
   int nb_sommets;
   int **adjacence;
 } grapheMol;
@@ -87,10 +88,10 @@ void ajouterDansFile(file *file, int id);
 element defiler(file *file);
 void printFile(file *file);
 
-cycle *initCycle();
 listeCycles* initListeCycles();
 void ajouterCycleDansListe(listeCycles *cycles, cycle c);
 void freeListeCycles(listeCycles *cycles);
+void freeTousListeCycles(listeCycles *cycles);
 void printListeCycles(listeCycles *cycles);
 
 indexCycles* initIndexCycles(int taille);

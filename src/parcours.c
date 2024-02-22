@@ -97,7 +97,7 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
     }
 
     #ifdef TEST
-        printMatrice(matrice_aretes, cycles->nb_cycles, nb_aretes);
+       printMatrice(matrice_aretes, cycles->nb_cycles, nb_aretes);
     #endif
    
     // Elimination de Gauss
@@ -140,6 +140,12 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
         if (cycles_independants[i]) {
             ajouterCycleDansListe(base_minimale, cycles->cycles[i]);
         }
+        // Libérer la mémoire
+        else {
+            if (cycles->cycles[i].sommets) {
+                free(cycles->cycles[i].sommets);
+            }
+        }
     }
 
     // Libérer la mémoire
@@ -161,26 +167,28 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
 // dans l'arbre de parcours à partir de v + 1 (pour le sommet v).
 // On obtient la chaîne entre v et x en parcourant la liste des
 // prédecesseurs dans parents.
-void convertirEnCycle(cycle *c, int v_id, int x_id, int x_niv, int y_id, int y_niv, int *parents) {
+cycle convertirEnCycle(int v_id, int x_id, int x_niv, int y_id, int y_niv, int *parents) {
 
     int i;
-    c->source = v_id;
-    c->taille = x_niv + y_niv + 1;
-    c->sommets = malloc(c->taille * sizeof(int));
-    c->sommets[0] = v_id;
+    cycle c;
+    c.source = v_id;
+    c.taille = x_niv + y_niv + 1;
+    c.sommets = malloc(c.taille * sizeof(int));
+    c.sommets[0] = v_id;
     
     // Ecrire les sommets entre 1 et x_niv, en partant de la fin
     // = sommets de v à x
     for (i = x_niv; i > 0; i--) {
-        c->sommets[i] = x_id;
+        c.sommets[i] = x_id;
         x_id = parents[x_id];
     }
     // Ecrire les sommets entre x_niv + 1 et la fin du cycle, en partant du début
     // = sommet de y à v
     for (i = x_niv + 1; i < x_niv + y_niv + 1; i++) {
-        c->sommets[i] = y_id;
+        c.sommets[i] = y_id;
         y_id = parents[y_id];
     }
+    return c;
 }
 
 
@@ -188,7 +196,7 @@ void parcoursEnLargueur(grapheMol g, listeCycles *cycles, int i, int *parents) {
     
     int j, id1, id2;
     element tete;
-    cycle *c;
+    cycle c;
     int niveau, nb_restant_dans_niveau, nb_nouv_dans_niveau_suivant; 
     int *visites = calloc(g.nb_sommets, sizeof(int));
     int *niveaux = malloc(g.nb_sommets * sizeof(int));
@@ -235,9 +243,8 @@ void parcoursEnLargueur(grapheMol g, listeCycles *cycles, int i, int *parents) {
                     // Marquer l'arête comme vue
                     g.adjacence[id2][id1] = -1;
                     if (disjointsEtOrdonnes(i, tete.id, niveaux[tete.id], j, niveaux[j], parents)) {
-                        c = initCycle();
-                        convertirEnCycle(c, i, tete.id, niveaux[tete.id], j, niveaux[j], parents);
-                        ajouterCycleDansListe(cycles, *c);
+                        c = convertirEnCycle(i, tete.id, niveaux[tete.id], j, niveaux[j], parents);
+                        ajouterCycleDansListe(cycles, c);
                     }
                 }
             }

@@ -1,6 +1,6 @@
 #include "Levenshtein.h"
 
-int min(int a, int b, int c) {
+int minTrois(int a, int b, int c) {
 
   return a < b ? (a < c ? a : c) : (b < c ? b : c);
 }
@@ -39,7 +39,7 @@ int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2) {
     ligne_cour[0] = i;
     for (j = 1; j < taille2 + 1; j++) {
       cout = (chaine1[i - 1] == chaine2[j - 1]) ? 0 : 1;
-      ligne_cour[j] = min(ligne_prec[j] + 1, 
+      ligne_cour[j] = minTrois(ligne_prec[j] + 1, 
                           ligne_cour[j - 1] + 1, 
                           ligne_prec[j - 1] + cout);
     }

@@ -1,5 +1,4 @@
-#include "nauty.h"
-#include "structure.h"
+#include "McKay.h"
 
 int* numerotationCanonique(grapheMol *graphe_mol) {
 

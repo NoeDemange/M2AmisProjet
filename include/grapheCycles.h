@@ -1,6 +1,11 @@
 #ifndef GRAPHECYCLE_H
 #define GRAPHECYCLE_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "TriFusion.h"
+#include "utiles.h"
 #include "structure.h"
 
 grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, indexCycles *index_cycles);

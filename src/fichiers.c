@@ -1,14 +1,4 @@
-#include <dirent.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "fichiers.h"
-#include "structure.h"
-#include "utiles.h"
-#include "McKay.h"
-#include "grapheCycles.h"
-#include "parcours.h"
 
 void test(char *nom_dossier, char *chebi_id) {
 
@@ -29,6 +19,8 @@ void test(char *nom_dossier, char *chebi_id) {
     
   graphe_cycles = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
   printGrapheCycles(graphe_cycles);
+
+  generate_dot_file(&graphe_cycles);
 
   freeTousListeCycles(cycles);
   freeGrapheMol(graphe_mol);

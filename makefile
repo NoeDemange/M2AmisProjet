@@ -15,6 +15,8 @@ CC=gcc -fopenmp -O3
 EXEC=clean dir $(BINDIR)/$(TARGET)
 SRC:=$(wildcard $(SRCDIR)/*.c)
 OBJ:=$(SRC:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+DOT_FILES := $(wildcard graphs/*.dot)
+PNG_FILES := $(patsubst %.dot,%.png,$(DOT_FILES))
 
 all: $(EXEC)
 
@@ -42,10 +44,16 @@ dir:
 clean:
 	rm -rf $(OBJDIR)
 	rm -rf $(BINDIR)
+	rm -rf graphs
 	ls
 
 mrproper: clean
 	rm -rf data
+
+png: $(PNG_FILES)
+
+$(PNG_FILES): graphs/%.png: graphs/%.dot
+	dot -Tpng $< -o $@
 
 LADIR=M2AmisProjet_GroupeB
 zip:

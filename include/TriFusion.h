@@ -1,6 +1,9 @@
 #ifndef TRIFUSION_H
 #define TRIFUSION_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "structure.h"
 
 void merge(cycle cycles[], int l, int m, int r);

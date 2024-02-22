@@ -1,6 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/time.h>
+#include "utiles.h"
 
 double chrono() {
   
@@ -52,4 +50,45 @@ void printMatrice(int **matrice, int n, int m) {
     printf("\n");
   }
   printf("\n");
+}
+
+void createFolder(const char *path) {
+    #ifdef _WIN32
+        mkdir(path);
+    #else
+        mkdir(path, 0777);
+    #endif
+}
+
+void generate_dot_file(grapheCycles *graph) {
+    char foldername[100];
+    sprintf(foldername, "graphs");
+    createFolder(foldername);
+
+    char filename[100];
+    sprintf(filename, "graphs/%d.dot", graph->chebi_id);
+
+    FILE *fp = fopen(filename, "w");
+    if (fp == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    // Write the header for the DOT file
+    fprintf(fp, "graph G {\n");
+
+    // Write vertices
+    for (int i = 0; i < graph->nb_sommets; i++) {
+        fprintf(fp, "    %d [label=\"%d\"];\n", graph->sommets[i].id, graph->sommets[i].taille);
+    }
+
+    // Write edges
+    for (int i = 0; i < graph->nb_aretes; i++) {
+        fprintf(fp, "    %d -- %d [label=\"%d\"];\n", graph->aretes[i].id1, graph->aretes[i].id2, graph->aretes[i].poids);
+    }
+
+    // Write the footer for the DOT file
+    fprintf(fp, "}\n");
+
+    fclose(fp);
 }

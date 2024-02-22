@@ -1,12 +1,15 @@
 #ifndef STRUCTURE_H
 #define STRUCTURE_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 // Définie la taille max du buffer contenant l'id des cycles d'un sommet.
 // En effet, un buffer indexCycles* est défini, dans lequel on indexe l'id des cycles
 // auxquels appartient un sommet i.
 #define SIZE_INDEX 20
 
-#define TEST
+//#define TEST
 
 typedef struct grapheMol {
   int chebi_id;

@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "TriFusion.h"
 
 void merge(cycle cycles[], int l, int m, int r) {

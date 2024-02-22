@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "grapheCycles.h"
-#include "TriFusion.h"
-#include "utiles.h"
 
 grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, indexCycles *index_cycles) {
 

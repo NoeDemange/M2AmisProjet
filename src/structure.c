@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "structure.h"
 #include "utiles.h"
-#include "McKay.h"
-#include "Horton.h"
 
 grapheMol initGrapheMol(int nb_sommets, int chebi_id) {
 

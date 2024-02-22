@@ -1,5 +1,7 @@
 #include "fichiers.h"
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 void test(char *nom_dossier, char *chebi_id, char *chebi_id1) {
 
   grapheMol graphe_mol;
@@ -64,7 +66,7 @@ void procedure(char *nom_dossier, int max_fichiers) {
   indexCycles *index_cycles = initIndexCycles(max_sommets);
 
   grapheCycles *liste_GC = malloc(nb_fichiers * sizeof(grapheCycles));
-
+  grapheMol * liste_GM = malloc(nb_fichiers* sizeof(grapheMol));
   //printf("Max sommets : %d\n", max_sommets);
 
   // if (max_fichiers > 0)
@@ -96,8 +98,10 @@ void procedure(char *nom_dossier, int max_fichiers) {
     //generate_dot_file(&graphe_cycles);
     resetIndexCycles(index_cycles, graphe_mol.nb_sommets);
     
+    liste_GM[pos_fic] = graphe_mol;
+
     freeTousListeCycles(cycles);
-    freeGrapheMol(graphe_mol);
+    //freeGrapheMol(graphe_mol); 
     //freeGrapheCycles(graphe_cycles); // Temporaire
     fichiers = freeListeFichiers(fichiers);
 
@@ -118,12 +122,13 @@ void procedure(char *nom_dossier, int max_fichiers) {
     }
   }
 
- 
   for(int i = 1; i<nb_fichiers; i++){
     printf("Calcul de similarité pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
     for(int j = 0; j<i; j++){
      float sim = similarite(liste_GC[i], liste_GC[j]);
-      matRes[i-1][j] = sim;
+     float lev = distanceLevenshtein(liste_GM[i].types, liste_GM[i].nb_sommets,liste_GM[j].types, liste_GM[j].nb_sommets);
+     lev = 1-(lev/MAX(liste_GM[i].nb_sommets,liste_GM[j].nb_sommets));
+      matRes[i-1][j] = sim*lev;
       //printf("sim %f; mat %f \n", sim, matRes[i-1][j]);
     }
   }
@@ -134,6 +139,10 @@ void procedure(char *nom_dossier, int max_fichiers) {
     freeGrapheCycles(liste_GC[i]);
   }
   free(liste_GC);
+  for(int i = 0; i<nb_fichiers; i++){
+    freeGrapheMol(liste_GM[i]);
+  }
+  free(liste_GM);
 
 }
  

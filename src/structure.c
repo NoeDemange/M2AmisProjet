@@ -243,7 +243,7 @@ void ajouterCycleDansIndex(indexCycles *index_cycles, int id_sommet, int id_cycl
     
   if (id_sommet > index_cycles->taille) {
     printf("Erreur : la taille de buffer allouée pour indexer les cycles");
-    printf(" est inférieure à la taille du graphe moléculaire.\n");
+    printf(" est inférieure à la taille du graphe moléculaire. %d  %d\n", id_sommet,index_cycles->taille);
     exit(EXIT_FAILURE);
   }
 

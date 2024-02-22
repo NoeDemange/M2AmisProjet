@@ -270,7 +270,7 @@ cycle* Elimination_Gaussienne(cycle* set,int *nb_cycles,int** graph,int nb_somme
         //}
     }
 
-int *aj_cycle,maxi,max_ind;
+int *aj_cycle,maxi;
     for(int i = 0; i<(*nb_cycles)-1;i++){
         for(int j =i+1; j<(*nb_cycles);j++){
             if(tab_base[i]*tab_base[j]==1){
@@ -278,11 +278,9 @@ int *aj_cycle,maxi,max_ind;
                 for(int l =0; l<(*nb_cycles);l++){
                     if(set[i].taille > set[j].taille){
 						maxi = set[i].taille;
-                        max_ind = i;
                     }
 					else{
 						maxi = set[j].taille;
-                        max_ind = j;
                     }
                     if(verification_egalite_tableaux(aj_cycle,save[l],nb_arcs) == 1 && tab_base[l] == 0 && set[l].taille == maxi){
                             tab_base[l] = 1;

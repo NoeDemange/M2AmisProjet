@@ -120,7 +120,7 @@ void ajouterAreteEntreCycles(int id1, int id2, int taille, listeAretes **aretes,
     j = 0;
     // Pour tous les cycles auxquels appartient id1
     while (j < SIZE_INDEX && index_cycles[id1].cycles[j] != -1) {
-      c1 = index_cycles[id1].cycles[i];
+      c1 = index_cycles[id1].cycles[j];
       ajouterAreteDansListe(aretes, nb_aretes, c1, c2, 2, taille);
       j++;
     }
@@ -181,11 +181,11 @@ void parcoursChaine(int id_debut, int id1, int id2, int taille, listeAretes **ar
 // pour marquer (-1) les isthmes qui ont déjà été vus.
 void ajouterAreteCyclesDisjoints(listeCycles *cycles, listeAretes **aretes, int *nb_aretes, indexCycles *index_cycles, grapheMol g) {
 
-  int i, j, max = 100;
+  int i, j, max = 200;
 
   marquerAretesCycles(&g, cycles, index_cycles);
 
-  printGrapheMol(g);
+ // printGrapheMol(g);
 
   for (i = 0; i < g.nb_sommets; i++) {
     for (j = i + 1; j < g.nb_sommets; j++) {

@@ -96,3 +96,38 @@ void generate_dot_file(grapheCycles *graph) {
 
     fclose(fp);
 }
+
+// Fonction pour écrire la matrice dans un fichier CSV
+void writeMatrixToCSV(int n, float **matrix,grapheCycles *liste_GC, const char* filename) {
+    FILE* fp = fopen(filename, "w");
+    if (fp == NULL) {
+        printf("Erreur lors de l'ouverture du fichier.");
+        return;
+    }
+
+    fprintf(fp, ";");
+    for (int i = 0; i < n; i++) {//écrire nom fichier
+        fprintf(fp, "%d", liste_GC[i].chebi_id);
+            if (i < n - 1) {
+                fprintf(fp, ";");
+            }
+    }
+    fprintf(fp, "\n");
+
+    // Écrire la matrice dans le fichier CSV
+    for (int i = 0; i < n; i++) {
+        fprintf(fp, "%d;", liste_GC[i].chebi_id);
+        for (int j = 0; j < n; j++) {
+          printf("i %d; j %d\n",i,j);
+          if(i==j){fprintf(fp, "%f", 1.0);}
+          else if(i<j){fprintf(fp, "%f", matrix[j-1][i]);}
+          else{fprintf(fp, "%f", matrix[i-1][j]);}
+            if (j < n - 1) {
+                fprintf(fp, ";");
+            }
+        }
+        fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+}

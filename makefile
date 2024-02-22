@@ -50,7 +50,7 @@ clean:
 mrproper: clean
 	rm -rf data
 
-png: $(PNG_FILES)
+png: $(PNG_FILES) #need graphviz
 
 $(PNG_FILES): graphs/%.png: graphs/%.dot
 	dot -Tpng $< -o $@

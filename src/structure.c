@@ -397,24 +397,31 @@ void printGrapheCycles(grapheCycles g) {
         }
       }
       for (j = 0; j < g.nb_sommets; j++)
-          printf("%d, ", ligne_cycle[j]);
+          printf("%d ", ligne_cycle[j]);
         printf("\n");
     }
-    arete a;
+    printf("taille des cycles\n");
     for (i = 0; i < g.nb_sommets; i++) {
-      printf("c%d :", g.sommets[i].id);
+      printf("%d ", g.sommets[i].taille);
+    }
+    printf("\n");
+    arete a;
+    printf("Liste d'adjacence\n");
+    for (i = 0; i < g.nb_sommets; i++) {
+      printf("%d :", g.sommets[i].id);
 
       for (j = 0; j < g.nb_aretes; j++) {
         if (g.aretes[j].id1 == i)
-          printf(" c%d", g.aretes[j].id2);
+          printf(" %d", g.aretes[j].id2);
         else if (g.aretes[j].id2 == i)
-          printf(" c%d", g.aretes[j].id1);
+          printf(" %d", g.aretes[j].id1);
       }
       printf("\n");
     }
+    printf("[arête : type, poids]\n");
     for (i = 0; i < g.nb_aretes; i++) {
       a = g.aretes[i];
-      printf("c%d-c%d : t%d, poids %d\n", a.id1, a.id2, a.type, a.poids);
+      printf("%d-%d : %d, %d\n", a.id1, a.id2, a.type, a.poids);
     }
     printf("\n");
     free(ligne_cycle);

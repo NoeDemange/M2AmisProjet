@@ -9,7 +9,7 @@
 // auxquels appartient un sommet i.
 #define SIZE_INDEX 20
 
-//#define TEST
+#define TEST
 
 typedef struct grapheMol {
   int chebi_id;

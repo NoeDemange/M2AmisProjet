@@ -22,7 +22,7 @@ grapheMol lireFichier(char* nom_dossier, char *nom_fichier, int opt);
 char* trouverNomFichier(char* nom_dossier, char *chebi_id);
 void genererFichierDotGC(grapheCycles *graph);
 void genererFichierDotGM(grapheMol *graph); 
-void genererFichierDotGP(grapheSim *g, int id1, int id2);
+void genererFichierDotGP(grapheSim *g, couple* sommets, int* clique, int id1, int id2);
 void ecrireMatriceDansCSV(int n, float **matrix,grapheCycles *liste_GC, const char* filename);
 void ecrireTableauDansCSV(int n, float *tableau, grapheCycles *liste_GC, const char *nom_fichier);
 

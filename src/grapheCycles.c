@@ -213,5 +213,6 @@ void ajouterAreteCyclesDisjoints(listeCycles *cycles, listeAretes **aretes, int 
       }
     }
   }
+  resetIndexCycles(index_cycles, g.nb_sommets);
 }
 

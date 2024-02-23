@@ -9,12 +9,11 @@ void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_opt
                                                   graphe_mol1.nb_sommets));
 
   grapheCycles graphe_cycles = genererGrapheCycles(graphe_mol, index_cycles);
-  resetIndexCycles(index_cycles, graphe_mol.nb_sommets);
   grapheCycles graphe_cycles1 = genererGrapheCycles(graphe_mol1, index_cycles);
  
  if (dot_option) {
-    genererFichierDotGM(&graphe_mol);
-    genererFichierDotGM(&graphe_mol1);
+    //genererFichierDotGM(&graphe_mol);
+    //genererFichierDotGM(&graphe_mol1);
     genererFichierDotGC(&graphe_cycles);
     genererFichierDotGC(&graphe_cycles1);
   }
@@ -41,17 +40,22 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
   char *nom_ref = NULL;
 
   listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers, &max_sommets, &nb_fichiers);
-  indexCycles *index_cycles = initIndexCycles(max_sommets);
-  grapheCycles *liste_GC = allouer(nb_fichiers * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
+  indexCycles *index_cycles;
+  grapheCycles *liste_GC = NULL;
 
   if (chebi_id) {
     nom_ref = trouverNomFichier(nom_dossier, chebi_id);
     graphe_mol = lireFichier(nom_dossier, chebi_id, 1);
+    liste_GC = allouer((nb_fichiers+1) * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
+    max_sommets = MAX(graphe_mol.nb_sommets,max_sommets);
+    index_cycles = initIndexCycles(max_sommets);
     liste_GC[0] = genererGrapheCycles(graphe_mol, index_cycles);
     freeGrapheMol(graphe_mol);
     pos_fic = 1;
   }
   else {
+    liste_GC = allouer(nb_fichiers * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
+    index_cycles = initIndexCycles(max_sommets);
     pos_fic = 0;
   }
   while (fichiers) {
@@ -72,7 +76,6 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
 
     cycles = baseDeCyclesMinimale(graphe_mol);
     liste_GC[pos_fic] = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
-    resetIndexCycles(index_cycles, graphe_mol.nb_sommets);
 
     freeGrapheMol(graphe_mol); 
     fichiers = freeListeFichiers(fichiers);
@@ -277,12 +280,12 @@ void genererFichierDotGC(grapheCycles *g) {
 
     // Sommets
     for (int i = 0; i < g->nb_sommets; i++) {
-        fprintf(fp, "    %d [label=\"%d\", shape=circle];\n", g->sommets[i].id, g->sommets[i].taille);
+        fprintf(fp, "    %d [label=\"%d, %d\", shape=circle];\n", g->sommets[i].id, g->sommets[i].id, g->sommets[i].taille);
     }
 
     // Arêtes
     char *couleur;
-    for (int i = 0; i < g->nb_sommets; i++) {
+    for (int i = 0; i < g->nb_sommets-1; i++) {
         for (int j = i + 1; j < g->nb_sommets; j++) {
             if (g->types_aretes[i][j].type != AUCUNE_LIAISON) {
                 couleur = (g->types_aretes[i][j].type == 1) ? "blue" : "green";
@@ -345,7 +348,7 @@ void genererFichierDotGM(grapheMol *g) {
     }
 
     // Arêtes
-    for (int i = 0; i < g->nb_sommets; i++) {
+    for (int i = 0; i < g->nb_sommets-1; i++) {
         for (int j = i + 1; j < g->nb_sommets; j++) {
             if (g->adjacence[i][j] != 0) { // Si le poids de l'arête est différent de zéro
                 fprintf(fp, "    %d -- %d ;\n", i, j);
@@ -359,7 +362,7 @@ void genererFichierDotGM(grapheMol *g) {
 }
 
 //Generer Dot pour grapheSim
-void genererFichierDotGP(grapheSim *g, int id1, int id2) {
+void genererFichierDotGP(grapheSim *g, couple* sommets, int* clique, int id1, int id2) {
     
     char nom_dossier[100];
     sprintf(nom_dossier, "graphs");
@@ -378,15 +381,22 @@ void genererFichierDotGP(grapheSim *g, int id1, int id2) {
     fprintf(fp, "graph G {\n");
 
     // Sommets
+    char* couleur_s;
     for (int i = 0; i < g->nb_sommets; i++) {
-        fprintf(fp, "    %d [label=\"%d\", shape=circle];\n", i, i);
+      couleur_s = (clique[i] == 1) ? "red" : "black";
+        fprintf(fp, "    %d [label=\"(%d,%d)\", shape=circle, color = %s];\n", i, sommets[i].id1, sommets[i].id2, couleur_s);
     }
 
     // Arêtes
-    for (int i = 0; i < g->nb_sommets; i++) {
+    char* couleur;
+    for (int i = 0; i < g->nb_sommets-1; i++) {
         for (int j = i + 1; j < g->nb_sommets; j++) {
             if (g->adjacence[i][j] != 0) { // Si le poids de l'arête est différent de zéro
-                fprintf(fp, "    %d -- %d ;\n", i, j);
+                couleur = "black";
+                if(clique[i]==1 && clique[j]==1) {
+                  couleur = "red";
+                }
+                fprintf(fp, "    %d -- %d [color = %s];\n", i, j, couleur);
             }
         }
     }

@@ -1,77 +1,65 @@
 #include "fichiers.h"
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
+void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_option) {
 
-void test(char *nom_dossier, char *chebi_id, char *chebi_id1) {
+  grapheMol graphe_mol = lireFichier(nom_dossier, chebi_id, 1);
+  grapheMol graphe_mol1 = lireFichier(nom_dossier, chebi_id1, 1);
 
-  grapheMol graphe_mol;
-  listeCycles *cycles;
-  grapheCycles graphe_cycles;
-  indexCycles *index_cycles;
+  indexCycles *index_cycles = initIndexCycles(MAX(graphe_mol.nb_sommets,
+                                                  graphe_mol1.nb_sommets));
 
-  graphe_mol = lireFichier(nom_dossier, chebi_id);
-  index_cycles = initIndexCycles(graphe_mol.nb_sommets);
-  //printGrapheMol(graphe_mol);
+  grapheCycles graphe_cycles = genererGrapheCycles(graphe_mol, index_cycles);
+  resetIndexCycles(index_cycles, graphe_mol.nb_sommets);
+  grapheCycles graphe_cycles1 = genererGrapheCycles(graphe_mol1, index_cycles);
 
-  grapheCanonique(&graphe_mol);
-  //printGrapheMol(graphe_mol);
+  freeGrapheMol(graphe_mol);
+  freeGrapheMol(graphe_mol1);
+  freeIndexCycles(index_cycles);
 
-  cycles = baseDeCyclesMinimale(graphe_mol);
-  //printListeCycles(cycles);
-    
-  graphe_cycles = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
-  //printGrapheCycles(graphe_cycles);
-
-  genererFichierDot(&graphe_cycles);
-
-  grapheMol graphe_mol1;
-  listeCycles *cycles1;
-  grapheCycles graphe_cycles1;
-  indexCycles *index_cycles1;
-
-  graphe_mol1 = lireFichier(nom_dossier, chebi_id1);
-  index_cycles1 = initIndexCycles(graphe_mol1.nb_sommets);
-  // //printGrapheMol(graphe_mol);
-
-  grapheCanonique(&graphe_mol1);
-  // //printGrapheMol(graphe_mol);
-
-  cycles1 = baseDeCyclesMinimale(graphe_mol1);
-  // //printListeCycles(cycles);
-    
-  graphe_cycles1 = transfoGrapheCycles(graphe_mol1, cycles1, index_cycles1);
+  if (dot_option) {
+    genererFichierDot(&graphe_cycles);
+    genererFichierDot(&graphe_cycles1);
+  }
 
   float sim = similarite(graphe_cycles,graphe_cycles1);
-  printf("SIMILARITE : %f\n", sim);
+  float lev = distLevenshteinNormalise(graphe_cycles, graphe_cycles1, NULL);
+  printf("Similarité : %f\n", sim * lev);
   
-  freeGrapheMol(graphe_mol);
   freeGrapheCycles(graphe_cycles);
-  freeIndexCycles(index_cycles);
-  freeTousListeCycles(cycles);
-  freeTousListeCycles(cycles1);
-  freeGrapheMol(graphe_mol1);
   freeGrapheCycles(graphe_cycles1);
-  freeIndexCycles(index_cycles1);
 }
 
-void procedure(char *nom_dossier, int max_fichiers) {
+void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
 
   grapheMol graphe_mol;
   listeCycles *cycles;
-  grapheCycles *liste_GC;
   int max_sommets, pos_fic;
   int i ,j;
   int nb_fichiers = 0;
+  char *nom_ref = NULL;
 
   listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers, &max_sommets, &nb_fichiers);
   indexCycles *index_cycles = initIndexCycles(max_sommets);
+  grapheCycles *liste_GC = allouer(nb_fichiers * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
 
-  liste_GC = malloc(nb_fichiers * sizeof(grapheCycles));
-
-  pos_fic = 0;
+  if (chebi_id) {
+    nom_ref = trouverNomFichier(nom_dossier, chebi_id);
+    graphe_mol = lireFichier(nom_dossier, chebi_id, 1);
+    liste_GC[0] = genererGrapheCycles(graphe_mol, index_cycles);
+    freeGrapheMol(graphe_mol);
+    pos_fic = 1;
+  }
+  else {
+    pos_fic = 0;
+  }
   while (fichiers) {
 
-    graphe_mol = lireFichier(nom_dossier, fichiers->nom);
+    if(nom_ref && strcmp(nom_ref, fichiers->nom) == 0) {
+      fichiers = freeListeFichiers(fichiers);
+      continue;
+    }
+
+    graphe_mol = lireFichier(nom_dossier, fichiers->nom, 0);
     
     if (graphe_mol.nb_sommets < 3) {
       freeGrapheMol(graphe_mol);
@@ -81,52 +69,65 @@ void procedure(char *nom_dossier, int max_fichiers) {
     grapheCanonique(&graphe_mol);
 
     cycles = baseDeCyclesMinimale(graphe_mol);
-    
     liste_GC[pos_fic] = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
-
     resetIndexCycles(index_cycles, graphe_mol.nb_sommets);
 
-    freeTousListeCycles(cycles);
     freeGrapheMol(graphe_mol); 
     fichiers = freeListeFichiers(fichiers);
-
     pos_fic++;
+  }
+  if (nom_ref) {
+    free(nom_ref);
   }
   freeIndexCycles(index_cycles);
 
-  float **resultats = malloc((nb_fichiers - 1) * sizeof(float*));
-
-  if (resultats == NULL) {
-    printf("ERROR MATRICE RESULTATS\n");
-    exit(666);
+  int **bufferDist = allouer(2 * sizeof(int*), "matrice de distance de Levenshtein (fichier.c)");
+  for (i = 0; i < 2; i++) {
+    bufferDist[i] = allouer((max_sommets + 1) * sizeof(int), "matrice de distance de Levenshtein (fichier.c)");
   }
-  for (i = 0; i < nb_fichiers - 1; i++) {
-    resultats[i] = malloc((i + 1) * sizeof(float));
-    if (resultats[i] == NULL) {
-      printf("ERROR MATRICE RESULTATS\n");
-      exit(666);
+  if (chebi_id) {
+    float *resultats = allouer((pos_fic) * sizeof(float), "tableau de similarité (fichiers.c)");
+    
+    for (i = 1; i < pos_fic; i++) {
+      printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
+      float sim = similarite(liste_GC[0], liste_GC[i]);
+      float lev = distLevenshteinNormalise(liste_GC[0], liste_GC[i], bufferDist);
+      resultats[i] = sim * lev;
     }
+    char *fichier_sortie = "matRes.csv";
+    printf("Ecriture du tableau de similarité dans %s.\n", fichier_sortie);
+    ecrireTableauDansCSV(pos_fic, resultats, liste_GC, fichier_sortie);
+
+    free(resultats);
   }
- 
+  else {
+    float **resultats = allouer((nb_fichiers - 1) * sizeof(float*), "matrice de similarité (fichiers.c)");
+    for (i = 0; i < nb_fichiers - 1; i++) {
+      resultats[i] = allouer((i + 1) * sizeof(float), "matrice de similarité (fichier.c)");
+    }
+    for (i = 0; i < nb_fichiers; i++) {
+      printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
+      for (j = i + 1; j < nb_fichiers; j++) {
+        float sim = similarite(liste_GC[i], liste_GC[j]);
+        float lev = distLevenshteinNormalise(liste_GC[i], liste_GC[j], bufferDist);
+        resultats[j - 1][i] = sim * lev;
+      }
+    }
+    char *fichier_sortie = "matRes.csv";
+    printf("Ecriture de la matrice de similarité dans %s.\n", fichier_sortie);
+    ecrireMatriceDansCSV(nb_fichiers, resultats, liste_GC, fichier_sortie);
+
+    for (i = 1; i < nb_fichiers; i++) {
+      free(resultats[i - 1]);
+    }
+    free(resultats);
+  }
+  free(bufferDist[0]);
+  free(bufferDist[1]);
+  free(bufferDist);
   for (i = 0; i < nb_fichiers; i++) {
-    printf("Calcul de similarité pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
-    for (j = i + 1; j < nb_fichiers; j++) {
-     float sim = similarite(liste_GC[i], liste_GC[j]);
-     float lev = distanceLevenshtein(liste_GC[i].types, liste_GC[i].nb_atomes,liste_GC[j].types, liste_GC[j].nb_atomes);
-     lev = 1-(lev/MAX(liste_GC[i].nb_atomes,liste_GC[j].nb_atomes));
-      resultats[j - 1][i] = sim*lev;
-      // printf("sim %f; mat %f \n", sim, resultats[j-1][i]);
-    }
-  }
-  
-  ecrireMatriceDansCSV(nb_fichiers, resultats, liste_GC, "matRes.csv");
-
-  freeGrapheCycles(liste_GC[0]);
-  for (i = 1; i < nb_fichiers; i++) {
-    free(resultats[i - 1]);
     freeGrapheCycles(liste_GC[i]);
   }
-  free(resultats);
   free(liste_GC);
 }
  
@@ -139,7 +140,6 @@ listeFichiers* lireDossier(char *nom_dossier, int max_fichiers, int *max_sommets
   listeFichiers *fichiers = initListeFichiers();
   char *temp;
   int nb_sommets;
-  //int iter = 0;
   *max_sommets = 0;
 
   if (d) {
@@ -167,17 +167,8 @@ listeFichiers* lireDossier(char *nom_dossier, int max_fichiers, int *max_sommets
     }
     closedir(d);
   }
-  printf("Nombre de fichiers : %d\n", (*iter));
+  printf("Nombre de fichiers dans %s : %d\n", nom_dossier, (*iter));
   return fichiers;
-}
-
-char* allouerChaine(char *chaine) {
-
-  size_t taille_allouee = strlen(chaine) ;
-  char *nouveau = (char *)malloc(taille_allouee + 1);
-  strcpy(nouveau, chaine);
-
-  return nouveau;
 }
 
 char* trouverNomFichier(char *nom_dossier, char *chebi_id) {
@@ -203,7 +194,7 @@ char* trouverNomFichier(char *nom_dossier, char *chebi_id) {
   }
   if (!nom_fichier) {
     printf("Pas de fichier correspondant à la molécule %s.\n", chebi_id);
-    exit(EXIT_FAILURE);
+    exit(1);
   }
   return nom_fichier;
 }
@@ -211,51 +202,48 @@ char* trouverNomFichier(char *nom_dossier, char *chebi_id) {
 // Scanne le fichier nom_fichier et stocke le contenu de la matrice d'adjacence dans un grapheMol.
 // Quand TEST, le nom du fichier doit être le numéro du ChEBI id.
 // Sinon, il s'agit du nom complet.
-grapheMol lireFichier(char* nom_dossier, char *nom_fichier) {
+grapheMol lireFichier(char* nom_dossier, char *nom_fichier, int opt) {
   
   FILE *f;
   grapheMol g;
   int nb_sommets, premier, valeur;
   char *types = NULL;
   int i, j;
-  char path[264];
+  char chemin[264];
   char c;
 
-  #ifdef TEST
+  if (opt) {
     char *nom_complet = trouverNomFichier(nom_dossier, nom_fichier);
-    sprintf(path, "%s/%s", nom_dossier, nom_complet);
+    sprintf(chemin, "%s/%s", nom_dossier, nom_complet);
     free(nom_complet);
-
-    f = fopen(path, "r");
-
-    verifScan(fscanf(f, "%d", &nb_sommets), nom_fichier);
-  #else
-    sprintf(path, "%s/%s", nom_dossier, nom_fichier);
-
-    f = fopen(path, "r");
-
-    verifScan(fscanf(f, "%d", &nb_sommets), strtok(nom_fichier, "_"));
-  #endif
+    f = ouvrirFichier(chemin, "r");
+    scannerFichier(fscanf(f, "%d", &nb_sommets), nom_fichier);
+  }
+  else {
+    sprintf(chemin, "%s/%s", nom_dossier, nom_fichier);
+    f = ouvrirFichier(chemin, "r");
+    scannerFichier(fscanf(f, "%d", &nb_sommets), strtok(nom_fichier, "_"));
+  }
 
   g = initGrapheMol(nb_sommets, atoi(nom_fichier));
 
-  types = malloc(nb_sommets + 1 * sizeof(char));
+  types = allouer(nb_sommets + 1 * sizeof(char), "chaînes de caractères des types d'atomes (fichiers.c)");
 
   for (i = 0; i < nb_sommets; i++) {
-    verifScan(fscanf(f, "%d", &premier), nom_fichier);
+    scannerFichier(fscanf(f, "%d", &premier), nom_fichier);
     for (j = i + 1; j < nb_sommets; j++) {
-      verifScan(fscanf(f, " %d", &valeur), nom_fichier);
+      scannerFichier(fscanf(f, " %d", &valeur), nom_fichier);
       g.adjacence[i][j] = valeur;
       g.adjacence[j][i] = valeur;
     }
   }
-  verifScan(fscanf(f, "%c", &c), nom_fichier);
+  scannerFichier(fscanf(f, "%c", &c), nom_fichier);
   while (c == '\n') {
-    verifScan(fscanf(f, "%c", &c), nom_fichier);
+    scannerFichier(fscanf(f, "%c", &c), nom_fichier);
   }
   types[0] = c;
   for (i = 1; i < nb_sommets; i++) {
-     verifScan(fscanf(f, "%c", &c), nom_fichier);
+     scannerFichier(fscanf(f, "%c", &c), nom_fichier);
     types[i] = c;
   }
   types[nb_sommets] = '\0';
@@ -264,4 +252,99 @@ grapheMol lireFichier(char* nom_dossier, char *nom_fichier) {
   fclose(f);
 
   return g;
+}
+
+void genererFichierDot(grapheCycles *g) {
+    
+    char nom_dossier[100];
+    sprintf(nom_dossier, "graphs");
+    creerDossier(nom_dossier);
+
+    char nom_fichier[100];
+    sprintf(nom_fichier, "graphs/%d.dot", g->chebi_id);
+
+    FILE *fp = ouvrirFichier(nom_fichier, "w");
+    if (fp == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    // Header du fichier DOT
+    fprintf(fp, "graph G {\n");
+
+    // Sommets
+    for (int i = 0; i < g->nb_sommets; i++) {
+        fprintf(fp, "    %d [label=\"%d\", shape=circle];\n", g->sommets[i].id, g->sommets[i].taille);
+    }
+
+    // Arêtes
+    char *couleur;
+    for (int i = 0; i < g->nb_sommets; i++) {
+        for (int j = i + 1; j < g->nb_sommets; j++) {
+            if (g->types_aretes[i][j].type != AUCUNE_LIAISON) {
+                couleur = (g->types_aretes[i][j].type == 1) ? "blue" : "green";
+                fprintf(fp, "    %d -- %d [label=\"%d\", color=%s];\n", i, j, g->types_aretes[i][j].poids, couleur);
+            }
+        }
+    }
+
+    fprintf(fp, "}\n");
+
+    fclose(fp);
+}
+
+// Écrit la matrice dans un fichier CSV
+void ecrireMatriceDansCSV(int n, float **matrice, grapheCycles *liste_GC, const char *nom_fichier) {
+    
+    FILE* fp = ouvrirFichier(nom_fichier, "w");
+
+    fprintf(fp, ";");
+
+    for (int i = 0; i < n; i++) {
+        // Écrire nom fichier
+        fprintf(fp, "%d", liste_GC[i].chebi_id);
+            if (i < n - 1) {
+                fprintf(fp, ";");
+            }
+    }
+    fprintf(fp, "\n");
+
+    // Écrire la matrice dans le fichier CSV
+    for (int i = 0; i < n; i++) {
+        fprintf(fp, "%d;", liste_GC[i].chebi_id);
+        for (int j = 0; j < n; j++) {
+            if (i == j)
+                fprintf(fp, "%f", 1.0);
+            else if (i < j)
+                fprintf(fp, "%f", matrice[j-1][i]);
+            else
+                fprintf(fp, "%f", matrice[i-1][j]);
+            if (j < n - 1)
+                fprintf(fp, ";");
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
+}
+
+void ecrireTableauDansCSV(int n, float *tableau, grapheCycles *liste_GC, const char *nom_fichier) {
+    
+    FILE* fp = ouvrirFichier(nom_fichier, "w");
+
+    fprintf(fp, ";");
+    
+    // Écrire nom référence
+    fprintf(fp, "%d", liste_GC[0].chebi_id);
+    fprintf(fp, "\n");
+
+    // Écrire le tableau dans le fichier CSV
+    for (int i = 0; i < n; i++) {
+        fprintf(fp, "%d;", liste_GC[i].chebi_id);
+        if (i == 0)
+            fprintf(fp, "%f", 1.0);
+        else
+            fprintf(fp, "%f", tableau[i]);
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
 }

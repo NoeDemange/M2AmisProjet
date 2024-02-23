@@ -7,7 +7,7 @@
 #include "utiles.h"
 
 listeCycles* baseDeCyclesMinimale(grapheMol g);
-int** matriceAretesDansCycles(grapheMol g, listeCycles *cycles, int *nb_aretes);
+int** matriceIncidenceCycles(grapheMol g, listeCycles *cycles, int *nb_aretes);
 listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles);
 
 #endif

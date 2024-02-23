@@ -5,10 +5,13 @@
 #include <stdlib.h>
 
 #include "TriFusion.h"
+#include "McKay.h"
 #include "utiles.h"
+#include "Horton.h"
 #include "structure.h"
 
 grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, indexCycles *index_cycles);
+grapheCycles genererGrapheCycles(grapheMol graphe_mol, indexCycles *index_cycles);
 void marquerAretesCycles(grapheMol *g, listeCycles *cycles, indexCycles *index_cycles);
 void trierSommetsCycles(listeCycles *liste_c);
 int intersectionCycles(cycle c1, cycle c2);

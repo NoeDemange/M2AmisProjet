@@ -15,6 +15,14 @@
 
 //#define TEST
 
+#define OPTSTR "a:b:n:g"
+#define USAGE_FMT  "usage : [-a chebi_id1 (défaut : vide)] [-b chebi_id2 (défaut : vide)] [-n nb_fichiers (défaut : tous (= 0))] [-g (défaut : non)] [-h]\n"
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define ABS(a) ((a) > 0 ? (a) : (-a))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MIN3(a, b, c) ((a) < (c) ? (a) : (b) < (c) ? (b) : (c))
+
 typedef struct grapheMol {
   int chebi_id;
   char *types;
@@ -94,6 +102,13 @@ typedef struct file {
     element *tete;
     element *queue;
 } file;
+
+typedef struct options {
+  char *chebi_id1;
+  char *chebi_id2;
+  int nb_fichiers;
+  int graphe;
+} options;
 
 grapheMol initGrapheMol(int nb_sommets, int chebi_id);
 void resetGrapheMol(grapheMol g);

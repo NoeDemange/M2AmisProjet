@@ -42,7 +42,7 @@ int* numerotationCanonique(grapheMol *graphe_mol) {
 
   densenauty(g,lab,ptn,orbits,&options,&stats,m,n,canong);
 
-  int *perm = malloc(n * sizeof(int));
+  int *perm = allouer(n * sizeof(int), "tableau des permutations des sommets d'un graphe (McKay.c)");
 
   for (i = 0; i < n; i++) {
     perm[lab[i]] = i;
@@ -59,9 +59,6 @@ void grapheCanonique(grapheMol *graphe_mol) {
 
   int *perm = numerotationCanonique(graphe_mol);
 
-  int *temp1 = malloc(n * sizeof(int));
-  int *temp2 = malloc(n * sizeof(int));
-
   // Trouver le premier sommet à permuter
   for (i = 0; i < n; i++) {
     if (perm[i] != i) {
@@ -71,8 +68,12 @@ void grapheCanonique(grapheMol *graphe_mol) {
   }
   // Déjà canonique
   if (premier == -1) {
+    free(perm);
     return;
   }
+
+  int *temp1 = allouer(n * sizeof(int), "tableau temporaire 1 de permutation des sommets (McKay.c)");
+  int *temp2 = allouer(n * sizeof(int), "tableau temporaire 2 de permutation des sommets (McKay.c)");
 
   // Permutation des lignes
   // Première ligne permutée

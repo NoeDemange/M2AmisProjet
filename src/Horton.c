@@ -5,7 +5,7 @@ listeCycles* baseDeCyclesMinimale(grapheMol g) {
     int i;
     listeCycles *cycles = initListeCycles();
     listeCycles *base_minimale;
-    int *parents = malloc(g.nb_sommets * sizeof(int));
+    int *parents = allouer(g.nb_sommets * sizeof(int), "parents des sommets dans le parcours (Horton.c)");
 
     for (i = 0; i < g.nb_sommets; i++) {
         parcoursEnLargueur(g, cycles, i, parents);
@@ -22,12 +22,12 @@ listeCycles* baseDeCyclesMinimale(grapheMol g) {
     return base_minimale;
 }
 
-int** matriceAretesDansCycles(grapheMol g, listeCycles *cycles, int *nb_aretes) {
+int** matriceIncidenceCycles(grapheMol g, listeCycles *cycles, int *nb_aretes) {
 
     int i,j;
     int id1, id2, arete_id;
     *nb_aretes = 0;
-    int **matrice_aretes = calloc(cycles->nb_cycles, sizeof(int*));    
+    int **incidence = callouer(cycles->nb_cycles, sizeof(int*), "matrice d'incidence des cycles (Horton.c)");    
 
     // Numéroter les arêtes dans la matrice d'adjacence
     for (i = 0; i < g.nb_sommets; i++) {
@@ -39,9 +39,9 @@ int** matriceAretesDansCycles(grapheMol g, listeCycles *cycles, int *nb_aretes) 
     }
     // Mémoire
     for (i = 0; i < cycles->nb_cycles; i++) {
-        matrice_aretes[i] = calloc(*nb_aretes, sizeof(int)); 
+        incidence[i] = callouer(*nb_aretes, sizeof(int), "matrice d'incidence des cycles (Horton.c)"); 
     }
-    // Remplir la matrice matrice_aretes
+    // Remplir la matrice incidence
     for (i = 0; i < cycles->nb_cycles; i++) {
         // Mémoire
         // Arête entre premier et dernier atome du cycle
@@ -54,7 +54,7 @@ int** matriceAretesDansCycles(grapheMol g, listeCycles *cycles, int *nb_aretes) 
         else {
             arete_id = g.adjacence[id1][id2] - 1;
         }
-        matrice_aretes[i][arete_id] = 1;
+        incidence[i][arete_id] = 1;
 
         // Arête entre si et si+1 dans le cycle
         for (j = 0; j < cycles->cycles[i].taille - 1; j++) {
@@ -67,10 +67,10 @@ int** matriceAretesDansCycles(grapheMol g, listeCycles *cycles, int *nb_aretes) 
             else {
                 arete_id = g.adjacence[id1][id2] - 1;
             }
-            matrice_aretes[i][arete_id] = 1;
+            incidence[i][arete_id] = 1;
         }
     }
-    return matrice_aretes;
+    return incidence;
 }
 
 listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
@@ -78,12 +78,12 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
     int i, j, k, premier;
     int somme_ligne;
     int nb_aretes;
-    int **matrice_aretes = matriceAretesDansCycles(g, cycles, &nb_aretes);
+    int **incidence = matriceIncidenceCycles(g, cycles, &nb_aretes);
     
-    // printMatrice(matrice_aretes, cycles->nb_cycles, *nb_aretes);
+    // printMatrice(incidence, cycles->nb_cycles, *nb_aretes);
     
-    int *cycles_independants = malloc(cycles->nb_cycles * sizeof(int));
-    int *cycles_deja_ajoutes =  calloc(cycles->nb_cycles, sizeof(int));
+    int *cycles_independants = allouer(cycles->nb_cycles * sizeof(int), "tableau binaire des cycles indépendants (Hortons.c)");
+    int *cycles_deja_ajoutes =  callouer(cycles->nb_cycles, sizeof(int), "talbeau des cycles ajoutés dans la base (Horton.c)");
     listeCycles *base_minimale = initListeCycles();
 
     for (i = 0; i < cycles->nb_cycles; i++) {
@@ -91,7 +91,7 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
     }
 
     #ifdef TEST
-       printMatrice(matrice_aretes, cycles->nb_cycles, nb_aretes);
+       printMatrice(incidence, cycles->nb_cycles, nb_aretes);
     #endif
    
     // Elimination de Gauss
@@ -99,18 +99,18 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
 
         premier = -1;
         for (j = 0; j < nb_aretes; j++) {
-            if(matrice_aretes[i][j] == 1) {
+            if(incidence[i][j] == 1) {
                 premier = j;
                 break;
             }
         }
         if (premier != -1) {
             for (j = i + 1; j < cycles->nb_cycles; j++) {
-                if (matrice_aretes[j][premier] == 1) {
+                if (incidence[j][premier] == 1) {
                     somme_ligne = 0;
                     for (k = 0; k < nb_aretes; k++) {
-                        matrice_aretes[j][k] ^=  matrice_aretes[i][k];// XOR
-                        if (matrice_aretes[j][k]) {
+                        incidence[j][k] ^=  incidence[i][k];// XOR
+                        if (incidence[j][k]) {
                             somme_ligne++;
                         }
                     }
@@ -118,7 +118,7 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
 
                     #ifdef TEST
                         printf("%d <- %d XOR %d\n", j, j, i);
-                        printMatrice(matrice_aretes, cycles->nb_cycles, nb_aretes);
+                        printMatrice(incidence, cycles->nb_cycles, nb_aretes);
                     #endif
                 }
             }
@@ -126,7 +126,7 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
     }
 
     #ifdef TEST
-        printMatrice(matrice_aretes, cycles->nb_cycles, nb_aretes);
+        printMatrice(incidence, cycles->nb_cycles, nb_aretes);
     #endif
 
     // Cycles indépendants
@@ -144,9 +144,9 @@ listeCycles* eliminationGaussienne(grapheMol g, listeCycles *cycles) {
 
     // Libérer la mémoire
     for (int i = 0; i < cycles->nb_cycles; i++) {
-        free(matrice_aretes[i]);
+        free(incidence[i]);
     }
-    free(matrice_aretes);
+    free(incidence);
     free(cycles_independants);
     free(cycles_deja_ajoutes);
     freeListeCycles(cycles);

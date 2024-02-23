@@ -7,10 +7,10 @@ grapheMol initGrapheMol(int nb_sommets, int chebi_id) {
   g.nb_sommets = nb_sommets;
   g.chebi_id = chebi_id;
   g.types = NULL;
-  g.adjacence = malloc(nb_sommets * sizeof(int*));
+  g.adjacence = allouer(nb_sommets * sizeof(int*), "matrice d'adjacence du graphe moléculaire (structure.c)");
 
   for(int i = 0; i < nb_sommets; i++) {
-    g.adjacence[i] = calloc(nb_sommets, sizeof(int));
+    g.adjacence[i] = callouer(nb_sommets, sizeof(int), "matrice d'adjacence du graphe moléculaire (structure.c)");
   }
 
   return g;
@@ -53,7 +53,7 @@ void printGrapheMol(grapheMol g) {
 
 listeFichiers* initListeFichiers(void) {
 
-  listeFichiers *f = malloc(sizeof(struct listeFichiers));
+  listeFichiers *f = allouer(sizeof(struct listeFichiers), "liste des fichiers initialisée (structure.c)");
   f->nom = NULL;
   f->suiv = NULL;
   return f;
@@ -65,7 +65,7 @@ void ajouterNomFichier(listeFichiers **fichiers, char *nom_fichier) {
     (*fichiers)->nom = nom_fichier;
   }
   else {
-    listeFichiers *nouveau = malloc(sizeof(struct listeFichiers));
+    listeFichiers *nouveau = allouer(sizeof(struct listeFichiers), "liste des fichiers (structure.c)");
     nouveau->nom = nom_fichier;
     nouveau->suiv = *fichiers;
     *fichiers = nouveau;
@@ -107,7 +107,7 @@ int estVide(file *file) {
 
 element* initElement(int id) {
 
-    element *nouveau = malloc(sizeof(element));
+    element *nouveau = allouer(sizeof(element), "élément d'une file (structure.c)");
     nouveau->id = id;
     nouveau->suiv = NULL;
     return nouveau;
@@ -115,7 +115,7 @@ element* initElement(int id) {
 
 file* initFile(int id) {
 
-    file *f = malloc(sizeof(file));
+    file *f = allouer(sizeof(file), "file du parcours (structure.c)");
     f->tete = initElement(id);
     f->queue = f->tete;
     return f;
@@ -157,7 +157,7 @@ void printFile(file *file) {
 
 listeCycles* initListeCycles() {
 
-    listeCycles *cycles = malloc(sizeof(listeCycles));
+    listeCycles *cycles = allouer(sizeof(listeCycles), "liste des cycles (structure.c)");
     cycles->cycles = NULL;
     cycles->nb_cycles = 0;
     return cycles;
@@ -166,10 +166,10 @@ listeCycles* initListeCycles() {
 void ajouterCycleDansListe(listeCycles *cycles, cycle c) {
 
   if(cycles->cycles == NULL) {
-		cycles->cycles = malloc((cycles->nb_cycles + 1) * sizeof(cycle));
+		cycles->cycles = allouer((cycles->nb_cycles + 1) * sizeof(cycle), "tableau des cycles (structure.c)");
 	}
 	else {
-		cycle *temp = realloc(cycles->cycles, (cycles->nb_cycles + 1) * sizeof(cycle));
+		cycle *temp = reallouer(cycles->cycles, (cycles->nb_cycles + 1) * sizeof(cycle), "cycle dans liste de cycles (structure.c)");
     
     if (temp == NULL) {
       printf("Erreur de réallocation de la liste de cycles.\n");
@@ -220,12 +220,12 @@ void printListeCycles(listeCycles *cycles) {
 
 indexCycles* initIndexCycles(int taille) {
 
-  indexCycles *index_cycles = malloc(taille * sizeof(indexCycles));
+  indexCycles *index_cycles = allouer(taille * sizeof(indexCycles), "index des cycles par atomes (structure.c)");
   index_cycles->taille = taille;
   int i, j;
 
   for (i = 0; i < taille; i++) {
-    index_cycles[i].cycles = malloc(SIZE_INDEX * sizeof(int));
+    index_cycles[i].cycles = allouer(SIZE_INDEX * sizeof(int), "sous-tableau de cycles de l'index de cycles (structure.c)");
 
     for (j = 0; j < SIZE_INDEX; j++) {
       index_cycles[i].cycles[j] = -1;
@@ -260,7 +260,6 @@ void ajouterCycleDansIndex(indexCycles *index_cycles, int id_sommet, int id_cycl
     i++;
   }
   if (i == SIZE_INDEX) {
-    // TODO faire un realloc
     printf("Erreur interne : taille de buffer SIZE_INDEX est trop petite.\n");
     exit(EXIT_FAILURE);
   }
@@ -306,7 +305,7 @@ grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, int nb_atomes, 
   g.nb_sommets = cycles->nb_cycles;
   g.nb_aretes = 0;
   g.types_aretes = NULL;
-  g.sommets = malloc(cycles->nb_cycles * sizeof(sommet));
+  g.sommets = allouer(cycles->nb_cycles * sizeof(sommet), "tableau des sommets du graphe de cycles (structure.c)");
   int i;
 
   for (i = 0; i < cycles->nb_cycles; i++) {
@@ -333,12 +332,12 @@ arete initArete(int id1, int id2, int type, int poids) {
 void ajouterAreteDansListe(listeAretes **aretes, int *nb_aretes, int id1, int id2, int type, int poids) {
 
   if (*aretes == NULL) {
-    *aretes = malloc(sizeof(listeAretes));
+    *aretes = allouer(sizeof(listeAretes), "liste des arêtes initialisée (structure.c)");
     (*aretes)->a = initArete(id1, id2, type, poids);
     (*aretes)->suiv = NULL;
   }
   else {
-    listeAretes *nouvelle = malloc(sizeof(listeAretes));
+    listeAretes *nouvelle = allouer(sizeof(listeAretes), "liste des arêtes (structure.c)");
     nouvelle->a = initArete(id1, id2, type, poids);
     nouvelle->suiv = *aretes;
     *aretes = nouvelle;
@@ -361,10 +360,10 @@ void freeListeAretes(listeAretes *aretes) {
 void ajouterAreteDansGraphe(grapheCycles *g, listeAretes *aretes, int nb_aretes) {
 
   int i, j;
-  g->types_aretes = malloc(g->nb_sommets * sizeof(typeArete*));
+  g->types_aretes = allouer(g->nb_sommets * sizeof(typeArete*), "matrice d'adjacence du graphe de cycles (structure.c)");
 
   for (i = 0; i < g->nb_sommets; i++) {
-    g->types_aretes[i] = malloc(g->nb_sommets * sizeof(typeArete));
+    g->types_aretes[i] = allouer(g->nb_sommets * sizeof(typeArete), "matrice d'adjacence du graphe de cycles (structure.c)");
 
     for (j = 0; j < g->nb_sommets; j++) {	
 			g->types_aretes[i][j].type = AUCUNE_LIAISON;

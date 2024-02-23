@@ -10,8 +10,21 @@ grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, inde
   //printIndexCycles(index_cycles, 30);
   ajouterAreteCyclesJoints(cycles, &aretes, &nb_aretes);
   ajouterAreteDansGraphe(&graphe_cycles, aretes, nb_aretes);
+  freeTousListeCycles(cycles);
 
   return graphe_cycles;
+}
+
+// Numérote canoniquement le graphe, applique l'algorithme d'Horton
+// pour obtenir une base de cycles minimale et transforme cette
+// liste de cycles en graphes.
+grapheCycles genererGrapheCycles(grapheMol graphe_mol, indexCycles *index_cycles) {
+
+  listeCycles *cycles;
+  grapheCanonique(&graphe_mol);
+  cycles = baseDeCyclesMinimale(graphe_mol);
+
+  return transfoGrapheCycles(graphe_mol, cycles, index_cycles);
 }
 
 // Marquer à 2 une arête dans la matrice d'adjacence de g si elle appartient à un cycle.

@@ -10,17 +10,19 @@ void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_opt
 
   grapheCycles graphe_cycles = genererGrapheCycles(graphe_mol, index_cycles);
   grapheCycles graphe_cycles1 = genererGrapheCycles(graphe_mol1, index_cycles);
+ 
+ if (dot_option) {
+    //genererFichierDotGM(&graphe_mol);
+    //genererFichierDotGM(&graphe_mol1);
+    genererFichierDotGC(&graphe_cycles);
+    genererFichierDotGC(&graphe_cycles1);
+  }
 
   freeGrapheMol(graphe_mol);
   freeGrapheMol(graphe_mol1);
   freeIndexCycles(index_cycles);
 
-  if (dot_option) {
-    genererFichierDot(&graphe_cycles);
-    genererFichierDot(&graphe_cycles1);
-  }
-
-  float sim = similarite(graphe_cycles,graphe_cycles1);
+  float sim = similarite(graphe_cycles,graphe_cycles1,dot_option);
   float lev = distLevenshteinNormalise(graphe_cycles, graphe_cycles1, NULL);
   printf("Similarité : %f\n", sim * lev);
   
@@ -37,17 +39,22 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
   char *nom_ref = NULL;
 
   listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers, &max_sommets, &nb_fichiers);
-  indexCycles *index_cycles = initIndexCycles(max_sommets);
-  grapheCycles *liste_GC = allouer((nb_fichiers + 1) * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
+  indexCycles *index_cycles;
+  grapheCycles *liste_GC = NULL;
 
   if (chebi_id) {
     nom_ref = trouverNomFichier(nom_dossier, chebi_id);
     graphe_mol = lireFichier(nom_dossier, chebi_id, 1);
+    liste_GC = allouer((nb_fichiers+1) * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
+    max_sommets = MAX(graphe_mol.nb_sommets,max_sommets);
+    index_cycles = initIndexCycles(max_sommets);
     liste_GC[0] = genererGrapheCycles(graphe_mol, index_cycles);
     freeGrapheMol(graphe_mol);
     pos_fic = 1;
   }
   else {
+    liste_GC = allouer(nb_fichiers * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
+    index_cycles = initIndexCycles(max_sommets);
     pos_fic = 0;
   }
   while (fichiers) {
@@ -92,7 +99,7 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
       #pragma omp parallel for
       for (int i = 1; i < pos_fic; i++) {
         printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
-        sim = similarite(liste_GC[0], liste_GC[i]);
+        sim = similarite(liste_GC[0], liste_GC[i],0);
         lev = distLevenshteinNormalise(liste_GC[0], liste_GC[i], bufferDist);
         resultats[i] = sim * lev;
       }
@@ -113,7 +120,7 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
       for (int i = 0; i < nb_fichiers; i++) {
         printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
         for (int j = i + 1; j < nb_fichiers; j++) {
-          sim = similarite(liste_GC[i], liste_GC[j]);
+          sim = similarite(liste_GC[i], liste_GC[j],0);
           lev = distLevenshteinNormalise(liste_GC[i], liste_GC[j], bufferDist);
           resultats[j - 1][i] = sim * lev;
         }
@@ -269,14 +276,15 @@ grapheMol lireFichier(char* nom_dossier, char *nom_fichier, int opt) {
   return g;
 }
 
-void genererFichierDot(grapheCycles *g) {
+//Generer Dot pour grapheCycles
+void genererFichierDotGC(grapheCycles *g) {
     
     char nom_dossier[100];
     sprintf(nom_dossier, "graphs");
     creerDossier(nom_dossier);
 
     char nom_fichier[100];
-    sprintf(nom_fichier, "graphs/%d.dot", g->chebi_id);
+    sprintf(nom_fichier, "graphs/GC%d.dot", g->chebi_id);
 
     FILE *fp = ouvrirFichier(nom_fichier, "w");
     if (fp == NULL) {
@@ -289,16 +297,123 @@ void genererFichierDot(grapheCycles *g) {
 
     // Sommets
     for (int i = 0; i < g->nb_sommets; i++) {
-        fprintf(fp, "    %d [label=\"%d\", shape=circle];\n", g->sommets[i].id, g->sommets[i].taille);
+        fprintf(fp, "    %d [label=\"%d, %d\", shape=circle];\n", g->sommets[i].id, g->sommets[i].id, g->sommets[i].taille);
     }
 
     // Arêtes
     char *couleur;
-    for (int i = 0; i < g->nb_sommets; i++) {
+    for (int i = 0; i < g->nb_sommets-1; i++) {
         for (int j = i + 1; j < g->nb_sommets; j++) {
             if (g->types_aretes[i][j].type != AUCUNE_LIAISON) {
                 couleur = (g->types_aretes[i][j].type == 1) ? "blue" : "green";
                 fprintf(fp, "    %d -- %d [label=\"%d\", color=%s];\n", i, j, g->types_aretes[i][j].poids, couleur);
+            }
+        }
+    }
+
+    fprintf(fp, "}\n");
+
+    fclose(fp);
+}
+
+//Generer Dot pour grapheMoléculaires
+void genererFichierDotGM(grapheMol *g) {
+    
+    char nom_dossier[100];
+    sprintf(nom_dossier, "graphs");
+    creerDossier(nom_dossier);
+
+    char nom_fichier[100];
+    sprintf(nom_fichier, "graphs/GM%d.dot", g->chebi_id);
+
+    FILE *fp = ouvrirFichier(nom_fichier, "w");
+    if (fp == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    // Header du fichier DOT
+    fprintf(fp, "graph G {\n");
+
+    // Sommets
+    char *couleur_s;
+    for (int i = 0; i < g->nb_sommets; i++) {
+        if (strcmp(g->types[i], "C") == 0)
+            couleur_s = "black";
+        else if (strcmp(g->types[i], "O") == 0)
+            couleur_s = "red";
+        else if (strcmp(g->types[i], "N") == 0)
+            couleur_s = "blue";
+        else if (strcmp(g->types[i], "F") == 0)
+            couleur_s = "chartreuse2";
+        else if (strcmp(g->types[i], "P") == 0)
+            couleur_s = "blueviolet";
+        else if (strcmp(g->types[i], "S") == 0)
+            couleur_s = "yellow";
+        else if (strcmp(g->types[i], "Cl") == 0)
+            couleur_s = "chartreuse4";
+        else if (strcmp(g->types[i], "Fe") == 0 || strcmp(g->types[i], "Co") == 0 ||
+                 strcmp(g->types[i], "Ni") == 0 || strcmp(g->types[i], "Cu") == 0)
+            couleur_s = "azure4";
+        else if (strcmp(g->types[i], "Br") == 0)
+            couleur_s = "darkgreen";
+        else if (strcmp(g->types[i], "I") == 0)
+            couleur_s = "springgreen4";
+        else
+            couleur_s = "burlywood4";
+        fprintf(fp, "    %d [label=\"%d,%s\", shape=circle, color=%s];\n", i, i, g->types[i], couleur_s);
+    }
+
+    // Arêtes
+    for (int i = 0; i < g->nb_sommets-1; i++) {
+        for (int j = i + 1; j < g->nb_sommets; j++) {
+            if (g->adjacence[i][j] != 0) { // Si le poids de l'arête est différent de zéro
+                fprintf(fp, "    %d -- %d ;\n", i, j);
+            }
+        }
+    }
+
+    fprintf(fp, "}\n");
+
+    fclose(fp);
+}
+
+//Generer Dot pour grapheSim
+void genererFichierDotGP(grapheSim *g, couple* sommets, int* clique, int id1, int id2) {
+    
+    char nom_dossier[100];
+    sprintf(nom_dossier, "graphs");
+    creerDossier(nom_dossier);
+
+    char nom_fichier[100];
+    sprintf(nom_fichier, "graphs/GP%d-%d.dot", id1, id2);
+
+    FILE *fp = ouvrirFichier(nom_fichier, "w");
+    if (fp == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    // Header du fichier DOT
+    fprintf(fp, "graph G {\n");
+
+    // Sommets
+    char* couleur_s;
+    for (int i = 0; i < g->nb_sommets; i++) {
+      couleur_s = (clique[i] == 1) ? "red" : "black";
+        fprintf(fp, "    %d [label=\"(%d,%d)\", shape=circle, color = %s];\n", i, sommets[i].id1, sommets[i].id2, couleur_s);
+    }
+
+    // Arêtes
+    char* couleur;
+    for (int i = 0; i < g->nb_sommets-1; i++) {
+        for (int j = i + 1; j < g->nb_sommets; j++) {
+            if (g->adjacence[i][j] != 0) { // Si le poids de l'arête est différent de zéro
+                couleur = "black";
+                if(clique[i]==1 && clique[j]==1) {
+                  couleur = "red";
+                }
+                fprintf(fp, "    %d -- %d [color = %s];\n", i, j, couleur);
             }
         }
     }
@@ -363,3 +478,4 @@ void ecrireTableauDansCSV(int n, float *tableau, grapheCycles *liste_GC, const c
     }
     fclose(fp);
 }
+

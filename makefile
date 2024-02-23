@@ -36,6 +36,7 @@ valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(BINDIR)/$(TARGET)
 
 data:
+	rm -rf data
 	python3 chebi_molecule_loader.py
 
 dir:
@@ -64,6 +65,8 @@ zip:
 	cp -r $(SRCDIR) $(LADIR)
 	cp -r include $(LADIR)
 	cp makefile ${LADIR}
+	cp nauty/A_lire.txt ${LADIR}
+	cp README.md $(LADIR)
 #	cp Compte_Rendu.pdf ${LADIR}
 	rm -f ${LADIR}.zip
 	zip -r ${LADIR}.zip ${LADIR}

@@ -1,6 +1,6 @@
 #include "similarite.h"
 
-float similarite(grapheCycles g1, grapheCycles g2) {
+float similarite(grapheCycles g1, grapheCycles g2, int dot_option) {
 
 	float sim = 0.0;
 
@@ -17,6 +17,10 @@ float similarite(grapheCycles g1, grapheCycles g2) {
 	grapheSim *graphe_produit = produitGraphesCycles(g1, g2, sommets, taille);
 
 	int* clique = cliqueMax(graphe_produit, (long)date);
+
+	if (dot_option) {
+    genererFichierDotGP(graphe_produit,sommets, clique, g1.chebi_id, g2.chebi_id);
+  	}
 
 	int* taille_graphe_commun = grapheCommunG12(g1, g2, sommets, taille, clique);
 

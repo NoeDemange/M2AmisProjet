@@ -319,28 +319,28 @@ void genererFichierDotGM(grapheMol *g) {
     char *couleur_s;
     for (int i = 0; i < g->nb_sommets; i++) {
         if (strcmp(g->types[i], "C") == 0)
-            couleur = "black";
+            couleur_s = "black";
         else if (strcmp(g->types[i], "O") == 0)
-            couleur = "red";
+            couleur_s = "red";
         else if (strcmp(g->types[i], "N") == 0)
-            couleur = "blue";
+            couleur_s = "blue";
         else if (strcmp(g->types[i], "F") == 0)
-            couleur = "chartreuse2";
+            couleur_s = "chartreuse2";
         else if (strcmp(g->types[i], "P") == 0)
-            couleur = "blueviolet";
+            couleur_s = "blueviolet";
         else if (strcmp(g->types[i], "S") == 0)
-            couleur = "yellow";
+            couleur_s = "yellow";
         else if (strcmp(g->types[i], "Cl") == 0)
-            couleur = "chartreuse4";
+            couleur_s = "chartreuse4";
         else if (strcmp(g->types[i], "Fe") == 0 || strcmp(g->types[i], "Co") == 0 ||
                  strcmp(g->types[i], "Ni") == 0 || strcmp(g->types[i], "Cu") == 0)
-            couleur = "azure4";
+            couleur_s = "azure4";
         else if (strcmp(g->types[i], "Br") == 0)
-            couleur = "darkgreen";
+            couleur_s = "darkgreen";
         else if (strcmp(g->types[i], "I") == 0)
-            couleur = "springgreen4";
+            couleur_s = "springgreen4";
         else
-            couleur = "burlywood4";
+            couleur_s = "burlywood4";
         fprintf(fp, "    %d [label=\"%d,%s\", shape=circle, color=%s];\n", i, i, g->types[i], couleur_s);
     }
 

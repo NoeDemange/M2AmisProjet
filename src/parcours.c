@@ -6,8 +6,8 @@ void parcoursEnLargueur(grapheMol g, listeCycles *cycles, int i, int *parents) {
     element tete;
     cycle c;
     int niveau, nb_restant_dans_niveau, nb_nouv_dans_niveau_suivant; 
-    int *visites = calloc(g.nb_sommets, sizeof(int));
-    int *niveaux = malloc(g.nb_sommets * sizeof(int));
+    int *visites = callouer(g.nb_sommets, sizeof(int), "tableau binaire des sommets visités lors du parcours (parcours.c)");
+    int *niveaux = allouer(g.nb_sommets * sizeof(int), "tableau du niveau de première rencontre des sommets (parcours.c)");
     for (int i = 0; i < g.nb_sommets; i++) {
         parents[i] = -1;
     }
@@ -81,7 +81,7 @@ cycle convertirEnCycle(int v_id, int x_id, int x_niv, int y_id, int y_niv, int *
     cycle c;
     c.source = v_id;
     c.taille = x_niv + y_niv + 1;
-    c.sommets = malloc(c.taille * sizeof(int));
+    c.sommets = allouer(c.taille * sizeof(int), "tableau des sommets d'un cycles (parcours.c)");
     c.sommets[0] = v_id;
     
     // Ecrire les sommets entre 1 et x_niv, en partant de la fin

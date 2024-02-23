@@ -2,16 +2,13 @@
 #define SIMILARITE_H
 
 #include "structure.h"
-//#include "grapheCycles.h"
-#include "graph.h"
 #include "clique.h"
+#include "utiles.h"
 
-int valeur_absolue(int a);
-couple *construction_couples_cycles(grapheCycles a,grapheCycles b,int taille);
-type_arete ** construction_matrice_graphe_cycles(grapheCycles a);
-void liberer_type_arete(type_arete **m, grapheCycles a);
-graph graphe_produit_cycles(grapheCycles a,grapheCycles b);
-int*  graphe_g12_cycles(graph g12, int* clique_max,grapheCycles a,grapheCycles b);
-float similarite(grapheCycles a,grapheCycles b);
+float similarite(grapheCycles g1, grapheCycles g2);
+int*  grapheCommunG12(grapheCycles g1, grapheCycles g2, couple *sommets, int taille, int* clique_max);
+grapheSim* produitGraphesCycles(grapheCycles g1, grapheCycles g2, couple *sommets, int taille);
+couple* couplesCyclesCompatibles(grapheCycles g1, grapheCycles g2, int *taille);
+float restrictionTailleCycles(int taille1, int taille2);
 
 #endif

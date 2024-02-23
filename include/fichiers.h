@@ -15,11 +15,13 @@
 #include "similarite.h"
 #include "Levenshtein.h"
 
-void test(char *nom_dossier, char *chebi_id, char *chebi_id1);
-void procedure(char *nom_dossier, int max_fichiers);
+void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_option);
+void procedure(char *nom_dossier, int max_fichiers, char *chebi_id);
 listeFichiers* lireDossier(char *nom_dossier, int max_fichiers, int *max_sommets, int *iter);
-grapheMol lireFichier(char* nom_dossier, char *nom_fichier);
+grapheMol lireFichier(char* nom_dossier, char *nom_fichier, int opt);
 char* trouverNomFichier(char* nom_dossier, char *chebi_id);
-char* allouerChaine(char *chaine);
+void genererFichierDot(grapheCycles *graph);
+void ecrireMatriceDansCSV(int n, float **matrix,grapheCycles *liste_GC, const char* filename);
+void ecrireTableauDansCSV(int n, float *tableau, grapheCycles *liste_GC, const char *nom_fichier);
 
 #endif

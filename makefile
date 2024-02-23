@@ -19,6 +19,7 @@ DOT_FILES := $(wildcard graphs/*.dot)
 PNG_FILES := $(patsubst %.dot,%.png,$(DOT_FILES))
 
 all: $(EXEC)
+	ln -sf ./$(BINDIR)/$(TARGET) ./similarite
 
 $(BINDIR)/$(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDNAUTY)
@@ -45,6 +46,7 @@ dir:
 clean:
 	rm -rf $(OBJDIR)
 	rm -rf $(BINDIR)
+	rm -rf similarite
 	rm -rf graphs
 	ls
 

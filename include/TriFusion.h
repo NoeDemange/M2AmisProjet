@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "structure.h"
+#include "utiles.h"
 
 void merge(cycle cycles[], int l, int m, int r);
 void mergeSort(cycle cycles[], int l, int r);

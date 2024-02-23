@@ -1,14 +1,22 @@
 #include "Levenshtein.h"
 
-int minTrois(int a, int b, int c) {
+// Distance de Levenshtein appliquée aux chaînes de caractères
+// décrivant les atomes d'une molécule.
+// Normalisée entre 0 et 1 et modifiée pour que 1 corresponde à l'identité.
+float distLevenshteinNormalise(grapheCycles g1, grapheCycles g2, int **matrice) {
 
-  return a < b ? (a < c ? a : c) : (b < c ? b : c);
+  float lev = distanceLevenshtein(g1.types, g1.nb_atomes, g2.types, g2.nb_atomes, matrice);
+  return 1 - (lev / MAX(g1.nb_atomes, g2.nb_atomes));
 }
 
-int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2) {
+// Distance de Levenshtein entre deux chaînes de caractères.
+// La matrice doit être instanciée avec deux lignes d'une taille
+// supérieure au max des 2 tailles + 1. Si NULL, instanciée dans la fonction.
+int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2, int **matrice) {
 
   char *chaine1, *chaine2;
-  int *ligne_prec, *ligne_cour;
+  int *ligne_prec;
+  int *ligne_cour;
   int i, j;
   int cout, distance;
 
@@ -25,9 +33,15 @@ int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2) {
     taille1 = taille2;
     taille2 = temp;
   }
-  // TODO En faire des buffers de taille max_nb_sommets...
-  ligne_prec = malloc((taille2 + 1) * sizeof(int));
-  ligne_cour = malloc((taille2 + 1) * sizeof(int));
+
+  if (matrice == NULL) {
+    ligne_prec = allouer((taille2 + 1) * sizeof(int), "première ligne de la matrice des distances de Levenshtein (Levenshtein.c)");
+    ligne_cour = allouer((taille2 + 1) * sizeof(int), "deuxième ligne de la matrice des distances de Levenshtein (Levenshtein.c)");
+  }
+  else {
+    ligne_prec = matrice[0];
+    ligne_cour = matrice[1];
+  }
 
   // Initialisation
   for (j = 0; j < taille2 + 1; j++) {
@@ -39,7 +53,7 @@ int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2) {
     ligne_cour[0] = i;
     for (j = 1; j < taille2 + 1; j++) {
       cout = (chaine1[i - 1] == chaine2[j - 1]) ? 0 : 1;
-      ligne_cour[j] = minTrois(ligne_prec[j] + 1, 
+      ligne_cour[j] = MIN3(ligne_prec[j] + 1, 
                           ligne_cour[j - 1] + 1, 
                           ligne_prec[j - 1] + cout);
     }
@@ -51,8 +65,10 @@ int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2) {
 
   distance = ligne_cour[taille2];
 
-  free(ligne_prec);
-  free(ligne_cour);
+  if (matrice == NULL) {
+    free(ligne_prec);
+    free(ligne_cour);
+  }
 
   return distance;
 }

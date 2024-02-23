@@ -15,6 +15,14 @@
 
 //#define TEST
 
+#define OPTSTR "a:b:n:g"
+#define USAGE_FMT  "usage : [-a chebi_id1 (défaut : vide)] [-b chebi_id2 (défaut : vide)] [-n nb_fichiers (défaut : tous (= 0))] [-g (défaut : non)] [-h]\n"
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define ABS(a) ((a) > 0 ? (a) : (-a))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MIN3(a, b, c) ((a) < (c) ? (a) : (b) < (c) ? (b) : (c))
+
 typedef struct grapheMol {
   int chebi_id;
   char *types;
@@ -23,14 +31,14 @@ typedef struct grapheMol {
 } grapheMol;
 
 typedef struct couple {
-	int a1;
-	int a2;
+	int id1;
+	int id2;
 }couple;
 
-typedef struct type_arete {
+typedef struct typeArete {
 	int type;
 	int poids;
-}type_arete;
+}typeArete;
 
 typedef struct sommet {
   int id;
@@ -43,6 +51,11 @@ typedef struct arete {
   int type;
   int poids;
 } arete;
+
+typedef struct grapheSim {
+  int nb_sommets;
+  int** adjacence;
+} grapheSim;
 
 typedef struct listeAretes {
   arete a;
@@ -62,10 +75,12 @@ typedef struct listeCycles {
 
 typedef struct grapheCycles {
   int chebi_id;
+  char *types;
+  int nb_atomes;
   int nb_sommets;
   int nb_aretes;
   sommet *sommets;
-  arete *aretes;
+  typeArete **types_aretes;
 } grapheCycles;
 
 typedef struct indexCycles {
@@ -87,6 +102,13 @@ typedef struct file {
     element *tete;
     element *queue;
 } file;
+
+typedef struct options {
+  char *chebi_id1;
+  char *chebi_id2;
+  int nb_fichiers;
+  int graphe;
+} options;
 
 grapheMol initGrapheMol(int nb_sommets, int chebi_id);
 void resetGrapheMol(grapheMol g);
@@ -117,7 +139,7 @@ void ajouterCycleDansIndex(indexCycles *index_cycles, int id_sommet, int id_cycl
 void freeIndexCycles(indexCycles *index_cycles);
 void printIndexCycles(indexCycles *index_cycles, int taille);
 
-grapheCycles initGrapheCycles(int chebi_id, listeCycles *liste_c);
+grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, int nb_atomes, char *types);
 arete initArete(int id1, int id2, int type, int poids);
 void ajouterAreteDansListe(listeAretes **aretes, int *nb_aretes, int id1, int id2, int type, int poids);
 void ajouterAreteDansGraphe(grapheCycles *g, listeAretes *aretes, int nb_aretes);

@@ -1,5 +1,47 @@
 #include "utiles.h"
 
+void* allouer(size_t taille, char *message) {
+    void * ptr;
+    ptr = malloc(taille);
+    if(ptr == NULL) {
+        printf("[Problème d'allocation] %s\n.", message);
+        exit(EXIT_FAILURE);
+    }
+    return ptr;
+}
+
+void* callouer(size_t nb_el, size_t taille, char *message) {
+    
+    void * ptr;
+    ptr = calloc (nb_el, taille);
+    if(ptr == NULL) {
+        printf("[Problème d'allocation] %s\n.", message);
+        exit(EXIT_FAILURE);
+    }
+    return ptr;
+}
+
+void* reallouer(void *ptr, size_t taille, char *message) {
+
+    void * nv_ptr;
+    nv_ptr = realloc(ptr, taille);
+    if(nv_ptr == NULL) {
+        printf("[Problème de reallocation] %s\n.", message);
+        exit(EXIT_FAILURE);
+    }
+    return nv_ptr;
+}
+
+FILE* ouvrirFichier(const char *nom_fichier, const char *mode) {
+
+    FILE *f = fopen(nom_fichier, mode);
+    if (f == NULL) {
+        printf("Erreur lors de l'ouverture du fichier %s.\n", nom_fichier);
+        exit(EXIT_FAILURE);
+    }
+    return f;
+}
+
 double chrono() {
   
 	struct timeval tv;
@@ -24,12 +66,30 @@ void tempsExecution(double sec, char *info) {
   printf("%s - %dh:%dm:%fs\n",info, h, m, s);	
 }
 
-void verifScan(int valeur, char *chebi_id) {
+void scannerFichier(int valeur, char *chebi_id) {
   
   if (valeur != 1) {
     printf("Erreur de lecture du fichier pour la molécule %s.\n", chebi_id);
     exit(EXIT_FAILURE);
   }
+}
+
+char* allouerChaine(char *chaine) {
+
+  size_t taille_allouee = strlen(chaine) ;
+  char *nouveau = (char *)malloc(taille_allouee + 1);
+  strcpy(nouveau, chaine);
+
+  return nouveau;
+}
+
+void creerDossier(const char *chemin) {
+    
+    #ifdef _WIN32
+        mkdir(chemin);
+    #else
+        mkdir(chemin, 0777);
+    #endif
 }
 
 void printTab(int *tab, int n) {
@@ -50,82 +110,4 @@ void printMatrice(int **matrice, int n, int m) {
     printf("\n");
   }
   printf("\n");
-}
-
-void createFolder(const char *path) {
-    #ifdef _WIN32
-        mkdir(path);
-    #else
-        mkdir(path, 0777);
-    #endif
-}
-
-void generate_dot_file(grapheCycles *graph) {
-    char foldername[100];
-    sprintf(foldername, "graphs");
-    createFolder(foldername);
-
-    char filename[100];
-    sprintf(filename, "graphs/%d.dot", graph->chebi_id);
-
-    FILE *fp = fopen(filename, "w");
-    if (fp == NULL) {
-        printf("Error opening file.\n");
-        return;
-    }
-
-    // Write the header for the DOT file
-    fprintf(fp, "graph G {\n");
-
-    // Write vertices
-    for (int i = 0; i < graph->nb_sommets; i++) {
-        fprintf(fp, "    %d [label=\"%d\", shape=circle];\n", graph->sommets[i].id, graph->sommets[i].taille);
-    }
-
-    // Write edges
-    for (int i = 0; i < graph->nb_aretes; i++) {
-      if(graph->aretes[i].type == 1)
-        fprintf(fp, "    %d -- %d [label=\"%d\", color=blue];\n", graph->aretes[i].id1, graph->aretes[i].id2, graph->aretes[i].poids);
-      if(graph->aretes[i].type == 2)
-        fprintf(fp, "    %d -- %d [label=\"%d\", color=green];\n", graph->aretes[i].id1, graph->aretes[i].id2, graph->aretes[i].poids);
-    }
-
-    // Write the footer for the DOT file
-    fprintf(fp, "}\n");
-
-    fclose(fp);
-}
-
-// Fonction pour écrire la matrice dans un fichier CSV
-void writeMatrixToCSV(int n, float **matrix,grapheCycles *liste_GC, const char* filename) {
-    FILE* fp = fopen(filename, "w");
-    if (fp == NULL) {
-        printf("Erreur lors de l'ouverture du fichier.");
-        return;
-    }
-
-    fprintf(fp, ";");
-    for (int i = 0; i < n; i++) {//écrire nom fichier
-        fprintf(fp, "%d", liste_GC[i].chebi_id);
-            if (i < n - 1) {
-                fprintf(fp, ";");
-            }
-    }
-    fprintf(fp, "\n");
-
-    // Écrire la matrice dans le fichier CSV
-    for (int i = 0; i < n; i++) {
-        fprintf(fp, "%d;", liste_GC[i].chebi_id);
-        for (int j = 0; j < n; j++) {
-          if(i==j){fprintf(fp, "%f", 1.0);}
-          else if(i<j){fprintf(fp, "%f", matrix[j-1][i]);}
-          else{fprintf(fp, "%f", matrix[i-1][j]);}
-            if (j < n - 1) {
-                fprintf(fp, ";");
-            }
-        }
-        fprintf(fp, "\n");
-    }
-
-    fclose(fp);
 }

@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
         case 'g':
             opt.graphe = 1;
             break;
+        case 'h':
         default:
             usage();
             break;

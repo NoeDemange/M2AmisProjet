@@ -21,7 +21,13 @@ grapheCycles transfoGrapheCycles(grapheMol graphe_mol, listeCycles *cycles, inde
 grapheCycles genererGrapheCycles(grapheMol graphe_mol, indexCycles *index_cycles) {
 
   listeCycles *cycles;
+  #ifdef TEST
+    printGrapheMol(graphe_mol);
+  #endif
   grapheCanonique(&graphe_mol);
+  #ifdef TEST
+    printGrapheMol(graphe_mol);
+  #endif
   cycles = baseDeCyclesMinimale(graphe_mol);
 
   return transfoGrapheCycles(graphe_mol, cycles, index_cycles);
@@ -213,5 +219,6 @@ void ajouterAreteCyclesDisjoints(listeCycles *cycles, listeAretes **aretes, int 
       }
     }
   }
+  resetIndexCycles(index_cycles, g.nb_sommets);
 }
 

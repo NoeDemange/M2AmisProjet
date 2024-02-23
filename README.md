@@ -79,14 +79,17 @@ make demo
 ### Exécution
 Pour exécuter le programme entrez :
 ```sh
-make run
+./similarite [-a chebi_id1 (défaut : vide)] [-b chebi_id2 (défaut : vide)] [-n nb_fichiers (défaut : tous)] [-g (défaut : non)] [-h (usage)]
 ```
-<!--```sh
-./bin/cageMol.exe -i [fichier_substrat.xyz]
+Les paramètres par défauts font permettent de faire la comparaison entre toutes les molécules extraitent de la base de données. Les paramètres `-a` et `-b` servent à renseigner l'id des deux molécules à comparer. Si `-a` est utilisé seul, la molécule sera comparée à toutes les autres. `-n` permet de limiter le nombre de comparaisons, et peut-être utilisé avec `-a`. Enfin `-g` permet d'obtenir des fichiers DOT pour visualiser les graphes de cycles des molécules avec `-a` et `-b`. Pour convertir les fichiers en image .png, entrez la commande suivante après la fin du programme :
+
+```sh
+make png
 ```
+<!--
 Puis les paramètres alpha et sizemax peuvent être aussi modifiés.
 Alpha est utilisé pour la génération d'une enveloppe concave et sizemax correspond au nombre d'atomes maximum que l'on veut dans un chemin qu'on génère.
-```sh
+
 alpha (défaut 3) : -a [double]
 
 sizemax (défaut 5) : -s [entier]

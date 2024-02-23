@@ -125,6 +125,6 @@ for mol in sdf_supplier :
                 output_file.write("\n")
                 for atom in atoms:
                     atom_symbol = atom.GetSymbol()
-                    output_file.write(atom_symbol)
+                    output_file.write(f'{atom_symbol} ')
 
 os.remove(unzipped_file_name)

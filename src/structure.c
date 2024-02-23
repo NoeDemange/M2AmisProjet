@@ -40,14 +40,17 @@ void freeGrapheMol(grapheMol g) {
 
 void printGrapheMol(grapheMol g) {
   
+  int  i, j;
   printf("matrice adj de %d : %d\n", g.chebi_id, g.nb_sommets);
-  for (int i = 0; i < g.nb_sommets; i++) {
-    for (int j = 0; j < g.nb_sommets; j++) {
+  for (i = 0; i < g.nb_sommets; i++) {
+    for (j = 0; j < g.nb_sommets; j++) {
       printf(" %d", g.adjacence[i][j]);
     }
     printf("\n");
   }
-  printf("%s\n", g.types);
+  for (i = 0; i < g.nb_sommets; i++) {
+     printf("%s", g.types[i]);
+  }
   printf("\n");
 }
 
@@ -296,7 +299,7 @@ void printIndexCycles(indexCycles *index_cycles, int taille) {
    printf("\n");
 }
 
-grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, int nb_atomes, char *types) {
+grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, int nb_atomes, char **types) {
 
   grapheCycles g;
   g.chebi_id = chebi_id;
@@ -377,6 +380,19 @@ void ajouterAreteDansGraphe(grapheCycles *g, listeAretes *aretes, int nb_aretes)
   while (aretes) {
     temp = aretes;
     aretes = aretes->suiv;
+    if (temp->a.id1 < 0 || temp->a.id1 > g->nb_sommets) {
+      printf("CHEBI:%d, %d-%d\n", g->chebi_id, temp->a.id1, temp->a.id2);
+     /*for (i = 0; i < g->nb_sommets; j++) {
+        printf("%d,%d ", g->sommets[i].id, g->sommets[i].taille);
+      }*/
+
+    }
+    if (temp->a.id2 < 0 || temp->a.id2 > g->nb_sommets) {
+      printf("CHEBI:%d, %d-%d\n", g->chebi_id, temp->a.id1, temp->a.id2);
+      /*for (i = 0; i < g->nb_sommets; j++) {
+        printf("%d,%d ", g->sommets[i].id, g->sommets[i].taille);
+      }*/
+    }
 
     g->types_aretes[temp->a.id1][temp->a.id2].poids = temp->a.poids;
     g->types_aretes[temp->a.id2][temp->a.id1].poids = temp->a.poids;
@@ -395,6 +411,9 @@ void freeGrapheCycles(grapheCycles g) {
     free(g.types_aretes[i]);
   }
   free(g.types_aretes);
+  for (i = 0; i < g.nb_atomes; i++) {
+    free(g.types[i]);
+  }
   free(g.types);
 }
 

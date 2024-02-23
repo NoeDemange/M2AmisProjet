@@ -9,7 +9,6 @@ void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_opt
                                                   graphe_mol1.nb_sommets));
 
   grapheCycles graphe_cycles = genererGrapheCycles(graphe_mol, index_cycles);
-  resetIndexCycles(index_cycles, graphe_mol.nb_sommets);
   grapheCycles graphe_cycles1 = genererGrapheCycles(graphe_mol1, index_cycles);
 
   freeGrapheMol(graphe_mol);
@@ -34,13 +33,12 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
   grapheMol graphe_mol;
   listeCycles *cycles;
   int max_sommets, pos_fic;
-  int i ,j;
   int nb_fichiers = 0;
   char *nom_ref = NULL;
 
   listeFichiers *fichiers = lireDossier(nom_dossier, max_fichiers, &max_sommets, &nb_fichiers);
   indexCycles *index_cycles = initIndexCycles(max_sommets);
-  grapheCycles *liste_GC = allouer(nb_fichiers * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
+  grapheCycles *liste_GC = allouer((nb_fichiers + 1) * sizeof(grapheCycles), "liste des graphes de cycles (fichiers.c)");
 
   if (chebi_id) {
     nom_ref = trouverNomFichier(nom_dossier, chebi_id);
@@ -70,7 +68,6 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
 
     cycles = baseDeCyclesMinimale(graphe_mol);
     liste_GC[pos_fic] = transfoGrapheCycles(graphe_mol, cycles, index_cycles);
-    resetIndexCycles(index_cycles, graphe_mol.nb_sommets);
 
     freeGrapheMol(graphe_mol); 
     fichiers = freeListeFichiers(fichiers);
@@ -81,20 +78,25 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
   }
   freeIndexCycles(index_cycles);
 
+  float sim, lev;
+  char *fichier_sortie = "matRes.csv";
   int **bufferDist = allouer(2 * sizeof(int*), "matrice de distance de Levenshtein (fichier.c)");
-  for (i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; i++) {
     bufferDist[i] = allouer((max_sommets + 1) * sizeof(int), "matrice de distance de Levenshtein (fichier.c)");
   }
   if (chebi_id) {
     float *resultats = allouer((pos_fic) * sizeof(float), "tableau de similarité (fichiers.c)");
     
-    for (i = 1; i < pos_fic; i++) {
-      printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
-      float sim = similarite(liste_GC[0], liste_GC[i]);
-      float lev = distLevenshteinNormalise(liste_GC[0], liste_GC[i], bufferDist);
-      resultats[i] = sim * lev;
+    #pragma omp parallel 
+    {
+      #pragma omp parallel for
+      for (int i = 1; i < pos_fic; i++) {
+        printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
+        sim = similarite(liste_GC[0], liste_GC[i]);
+        lev = distLevenshteinNormalise(liste_GC[0], liste_GC[i], bufferDist);
+        resultats[i] = sim * lev;
+      }
     }
-    char *fichier_sortie = "matRes.csv";
     printf("Ecriture du tableau de similarité dans %s.\n", fichier_sortie);
     ecrireTableauDansCSV(pos_fic, resultats, liste_GC, fichier_sortie);
 
@@ -102,22 +104,25 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
   }
   else {
     float **resultats = allouer((nb_fichiers - 1) * sizeof(float*), "matrice de similarité (fichiers.c)");
-    for (i = 0; i < nb_fichiers - 1; i++) {
+    for (int i = 0; i < nb_fichiers - 1; i++) {
       resultats[i] = allouer((i + 1) * sizeof(float), "matrice de similarité (fichier.c)");
     }
-    for (i = 0; i < nb_fichiers; i++) {
-      printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
-      for (j = i + 1; j < nb_fichiers; j++) {
-        float sim = similarite(liste_GC[i], liste_GC[j]);
-        float lev = distLevenshteinNormalise(liste_GC[i], liste_GC[j], bufferDist);
-        resultats[j - 1][i] = sim * lev;
+    #pragma omp parallel
+    {
+      #pragma omp parallel for
+      for (int i = 0; i < nb_fichiers; i++) {
+        printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
+        for (int j = i + 1; j < nb_fichiers; j++) {
+          sim = similarite(liste_GC[i], liste_GC[j]);
+          lev = distLevenshteinNormalise(liste_GC[i], liste_GC[j], bufferDist);
+          resultats[j - 1][i] = sim * lev;
+        }
       }
     }
-    char *fichier_sortie = "matRes.csv";
     printf("Ecriture de la matrice de similarité dans %s.\n", fichier_sortie);
     ecrireMatriceDansCSV(nb_fichiers, resultats, liste_GC, fichier_sortie);
 
-    for (i = 1; i < nb_fichiers; i++) {
+    for (int i = 1; i < nb_fichiers; i++) {
       free(resultats[i - 1]);
     }
     free(resultats);
@@ -125,7 +130,7 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
   free(bufferDist[0]);
   free(bufferDist[1]);
   free(bufferDist);
-  for (i = 0; i < nb_fichiers; i++) {
+  for (int i = 0; i < nb_fichiers; i++) {
     freeGrapheCycles(liste_GC[i]);
   }
   free(liste_GC);
@@ -207,7 +212,7 @@ grapheMol lireFichier(char* nom_dossier, char *nom_fichier, int opt) {
   FILE *f;
   grapheMol g;
   int nb_sommets, premier, valeur;
-  char *types = NULL;
+  char **types = NULL;
   int i, j;
   char chemin[264];
   char c;
@@ -227,7 +232,7 @@ grapheMol lireFichier(char* nom_dossier, char *nom_fichier, int opt) {
 
   g = initGrapheMol(nb_sommets, atoi(nom_fichier));
 
-  types = allouer(nb_sommets + 1 * sizeof(char), "chaînes de caractères des types d'atomes (fichiers.c)");
+  types = allouer(nb_sommets * sizeof(char*), "chaînes de caractères des types d'atomes (fichiers.c)");
 
   for (i = 0; i < nb_sommets; i++) {
     scannerFichier(fscanf(f, "%d", &premier), nom_fichier);
@@ -237,16 +242,26 @@ grapheMol lireFichier(char* nom_dossier, char *nom_fichier, int opt) {
       g.adjacence[j][i] = valeur;
     }
   }
-  scannerFichier(fscanf(f, "%c", &c), nom_fichier);
-  while (c == '\n') {
-    scannerFichier(fscanf(f, "%c", &c), nom_fichier);
+  i = 0;
+  int pos_deb = 0, pos_fin;
+  while(!feof(f)) {
+    c = fgetc(f);
+    if (c > 'A' && c < 'Z') {
+      pos_deb = ftell(f) - 1;
+    }
+    else if (c == ' ') {
+      pos_fin = ftell(f) - 1;
+      types[i] = allouer((pos_fin - pos_deb + 1) * sizeof(char), "chaînes de caractères des types d'atomes (fichiers.c)");
+      fseek(f, pos_deb, SEEK_SET);
+      for (j = 0; j < pos_fin - pos_deb; j++) {
+        c = fgetc(f);
+        types[i][j] = c;
+      }
+      types[i][pos_fin - pos_deb] = '\0';
+      c = fgetc(f);
+      i++;
+    }
   }
-  types[0] = c;
-  for (i = 1; i < nb_sommets; i++) {
-     scannerFichier(fscanf(f, "%c", &c), nom_fichier);
-    types[i] = c;
-  }
-  types[nb_sommets] = '\0';
   g.types = types;
 
   fclose(f);

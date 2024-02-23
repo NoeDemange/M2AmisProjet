@@ -15,8 +15,14 @@
 
 //#define TEST
 
-#define OPTSTR "a:b:n:g"
-#define USAGE_FMT  "usage : [-a chebi_id1 (défaut : vide)] [-b chebi_id2 (défaut : vide)] [-n nb_fichiers (défaut : tous (= 0))] [-g (défaut : non)] [-h]\n"
+#define OPTSTR "a:b:n:g:h"
+#define USAGE_FMT  "Calcul de similarité des molécules issues de la base données ChEBI par comparaison de leur graphe de cycles.\n\n\
+Usage : [-a chebi_id1 (défaut : vide)] [-b chebi_id2 (défaut : vide)] \
+[-n nb_fichiers (défaut : tous)] [-g (défaut : non)] [-h (usage)]\n\n\
+ -n      nombre de molécules issues de la base à comparer. Toutes si non renseigné. \
+Seulement les molécules chebi_id1 et chebi_id2 si -a et -b sont renseignés.\n\
+ -a,-b   prennent uniquement le numéro de l'ID de la molécule. Si -a seulement, compare la molécule à n autres molécules.\n\
+ -g      génère des fichiers DOT pour afficher le graphe des cycles des molécules si -a et -b sont renseignés.\n"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define ABS(a) ((a) > 0 ? (a) : (-a))
@@ -25,7 +31,7 @@
 
 typedef struct grapheMol {
   int chebi_id;
-  char *types;
+  char **types;
   int nb_sommets;
   int **adjacence;
 } grapheMol;
@@ -54,7 +60,7 @@ typedef struct arete {
 
 typedef struct grapheSim {
   int nb_sommets;
-  int** adjacence;
+  int **adjacence;
 } grapheSim;
 
 typedef struct listeAretes {
@@ -64,7 +70,7 @@ typedef struct listeAretes {
 
 typedef struct cycle {
   int source;
-  int* sommets;
+  int *sommets;
   int taille; 
 } cycle;
 
@@ -75,7 +81,7 @@ typedef struct listeCycles {
 
 typedef struct grapheCycles {
   int chebi_id;
-  char *types;
+  char **types;
   int nb_atomes;
   int nb_sommets;
   int nb_aretes;
@@ -139,7 +145,7 @@ void ajouterCycleDansIndex(indexCycles *index_cycles, int id_sommet, int id_cycl
 void freeIndexCycles(indexCycles *index_cycles);
 void printIndexCycles(indexCycles *index_cycles, int taille);
 
-grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, int nb_atomes, char *types);
+grapheCycles initGrapheCycles(listeCycles *cycles, int chebi_id, int nb_atomes, char **types);
 arete initArete(int id1, int id2, int type, int poids);
 void ajouterAreteDansListe(listeAretes **aretes, int *nb_aretes, int id1, int id2, int type, int poids);
 void ajouterAreteDansGraphe(grapheCycles *g, listeAretes *aretes, int nb_aretes);

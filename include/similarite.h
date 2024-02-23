@@ -4,8 +4,9 @@
 #include "structure.h"
 #include "clique.h"
 #include "utiles.h"
+#include "fichiers.h"
 
-float similarite(grapheCycles g1, grapheCycles g2);
+float similarite(grapheCycles g1, grapheCycles g2, int dot_option);
 int*  grapheCommunG12(grapheCycles g1, grapheCycles g2, couple *sommets, int taille, int* clique_max);
 grapheSim* produitGraphesCycles(grapheCycles g1, grapheCycles g2, couple *sommets, int taille);
 couple* couplesCyclesCompatibles(grapheCycles g1, grapheCycles g2, int *taille);

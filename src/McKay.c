@@ -51,29 +51,12 @@ int* numerotationCanonique(grapheMol *graphe_mol) {
   return perm;
 }
 
-void grapheCanonique(grapheMol *graphe_mol) {
+void passageTableauPerm(grapheMol *graphe_mol, int *perm, int premier, int *temp1, int *temp2) {
 
   int n = graphe_mol->nb_sommets;
-  int i,j, premier = -1;
-  int c1, c2;
-
-  int *perm = numerotationCanonique(graphe_mol);
-
-  // Trouver le premier sommet à permuter
-  for (i = 0; i < n; i++) {
-    if (perm[i] != i) {
-      premier = i;
-      break;
-    }
-  }
-  // Déjà canonique
-  if (premier == -1) {
-    free(perm);
-    return;
-  }
-
-  int *temp1 = allouer(n * sizeof(int), "tableau temporaire 1 de permutation des sommets (McKay.c)");
-  int *temp2 = allouer(n * sizeof(int), "tableau temporaire 2 de permutation des sommets (McKay.c)");
+  int temp;
+  int i, j;
+  char *c1, *c2;
 
   // Permutation des lignes
   // Première ligne permutée
@@ -96,7 +79,6 @@ void grapheCanonique(grapheMol *graphe_mol) {
     c2 = graphe_mol->types[perm[i]];
     graphe_mol->types[perm[i]] = c1;
     c1 = c2;
-
     i = perm[i];
   }
 
@@ -108,6 +90,7 @@ void grapheCanonique(grapheMol *graphe_mol) {
   }
 
   j = perm[premier];
+  perm[premier] = premier;
   // Toutes les autres colonnes
   while (j != premier) {
     for (i = 0; i < n; i++) {
@@ -115,7 +98,52 @@ void grapheCanonique(grapheMol *graphe_mol) {
       graphe_mol->adjacence[i][perm[j]] = temp1[i];
       temp1[i] = temp2[i];
     }
+    temp = j;
     j = perm[j];
+    perm[temp] = temp;
+  }
+}
+
+void grapheCanonique(grapheMol *graphe_mol) {
+
+  int n = graphe_mol->nb_sommets;
+  int i, premier = -1, pas_de_changement;
+
+  int *perm = numerotationCanonique(graphe_mol);
+
+  // Trouver le premier sommet à permuter
+  for (i = 0; i < n; i++) {
+    if (perm[i] != i) {
+      premier = i;
+      break;
+    }
+  }
+  // Déjà canonique
+  if (premier == -1) {
+    free(perm);
+    return;
+  }
+
+  int *temp1 = allouer(n * sizeof(int), "tableau temporaire 1 de permutation des sommets (McKay.c)");
+  int *temp2 = allouer(n * sizeof(int), "tableau temporaire 2 de permutation des sommets (McKay.c)");
+
+  while (premier != -1) {
+
+    passageTableauPerm(graphe_mol, perm, premier, temp1, temp2);
+    
+    pas_de_changement = 1;
+    // Trouver le prochain sommet à permuter
+    for (i = 0; i < n; i++) {
+      if (perm[i] != i) {
+        premier = i;
+        pas_de_changement = 0;
+        break;
+      }
+    }
+    // Tous les sommets sont permutés
+    if (pas_de_changement) {
+      premier = -1;
+    }
   }
 
   free(perm);

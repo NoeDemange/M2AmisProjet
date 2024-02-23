@@ -12,9 +12,9 @@ float distLevenshteinNormalise(grapheCycles g1, grapheCycles g2, int **matrice) 
 // Distance de Levenshtein entre deux chaînes de caractères.
 // La matrice doit être instanciée avec deux lignes d'une taille
 // supérieure au max des 2 tailles + 1. Si NULL, instanciée dans la fonction.
-int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2, int **matrice) {
+int distanceLevenshtein(char **mol1, int taille1, char **mol2, int taille2, int **matrice) {
 
-  char *chaine1, *chaine2;
+  char **chaine1, **chaine2;
   int *ligne_prec;
   int *ligne_cour;
   int i, j;
@@ -52,7 +52,7 @@ int distanceLevenshtein(char *mol1, int taille1, char *mol2, int taille2, int **
     // Calcul de la distance
     ligne_cour[0] = i;
     for (j = 1; j < taille2 + 1; j++) {
-      cout = (chaine1[i - 1] == chaine2[j - 1]) ? 0 : 1;
+      cout = (strcmp(chaine1[i - 1], chaine2[j - 1]) == 0) ? 0 : 1;
       ligne_cour[j] = MIN3(ligne_prec[j] + 1, 
                           ligne_cour[j - 1] + 1, 
                           ligne_prec[j - 1] + cout);

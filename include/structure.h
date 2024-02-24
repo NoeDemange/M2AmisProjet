@@ -15,7 +15,7 @@
 
 //#define TEST
 
-#define OPTSTR "a:b:n:g:h"
+#define OPTSTR "a:b:n:gh"
 #define USAGE_FMT  "Calcul de similarité des molécules issues de la base données ChEBI par comparaison de leur graphe de cycles.\n\n\
 Usage : [-a chebi_id1 (défaut : vide)] [-b chebi_id2 (défaut : vide)] \
 [-n nb_fichiers (défaut : tous)] [-g (défaut : non)] [-h (usage)]\n\n\

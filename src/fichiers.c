@@ -12,8 +12,8 @@ void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_opt
   grapheCycles graphe_cycles1 = genererGrapheCycles(graphe_mol1, index_cycles);
  
  if (dot_option) {
-    //genererFichierDotGM(&graphe_mol);
-    //genererFichierDotGM(&graphe_mol1);
+    genererFichierDotGM(&graphe_mol);
+    genererFichierDotGM(&graphe_mol1);
     genererFichierDotGC(&graphe_cycles);
     genererFichierDotGC(&graphe_cycles1);
   }
@@ -94,15 +94,12 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
   if (chebi_id) {
     float *resultats = allouer((pos_fic) * sizeof(float), "tableau de similarité (fichiers.c)");
     
-    #pragma omp parallel 
-    {
-      #pragma omp parallel for
-      for (int i = 1; i < pos_fic; i++) {
-        printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
-        sim = similarite(liste_GC[0], liste_GC[i],0);
-        lev = distLevenshteinNormalise(liste_GC[0], liste_GC[i], bufferDist);
-        resultats[i] = sim * lev;
-      }
+    
+    for (int i = 1; i < pos_fic; i++) {
+      printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
+      sim = similarite(liste_GC[0], liste_GC[i],0);
+      lev = distLevenshteinNormalise(liste_GC[0], liste_GC[i], bufferDist);
+      resultats[i] = sim * lev;
     }
     printf("Ecriture du tableau de similarité dans %s.\n", fichier_sortie);
     ecrireTableauDansCSV(pos_fic, resultats, liste_GC, fichier_sortie);
@@ -114,18 +111,16 @@ void procedure(char *nom_dossier, int max_fichiers, char *chebi_id) {
     for (int i = 0; i < nb_fichiers - 1; i++) {
       resultats[i] = allouer((i + 1) * sizeof(float), "matrice de similarité (fichier.c)");
     }
-    #pragma omp parallel
-    {
-      #pragma omp parallel for
-      for (int i = 0; i < nb_fichiers; i++) {
-        printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
-        for (int j = i + 1; j < nb_fichiers; j++) {
-          sim = similarite(liste_GC[i], liste_GC[j],0);
-          lev = distLevenshteinNormalise(liste_GC[i], liste_GC[j], bufferDist);
-          resultats[j - 1][i] = sim * lev;
-        }
+    
+    for (int i = 0; i < nb_fichiers; i++) {
+      printf("Calcul des similarités pour %d : CHEBI:%d\n",i, liste_GC[i].chebi_id);
+      for (int j = i + 1; j < nb_fichiers; j++) {
+        sim = similarite(liste_GC[i], liste_GC[j],0);
+        lev = distLevenshteinNormalise(liste_GC[i], liste_GC[j], bufferDist);
+        resultats[j - 1][i] = sim * lev;
       }
     }
+    
     printf("Ecriture de la matrice de similarité dans %s.\n", fichier_sortie);
     ecrireMatriceDansCSV(nb_fichiers, resultats, liste_GC, fichier_sortie);
 

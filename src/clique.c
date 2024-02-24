@@ -15,10 +15,25 @@ void calcul_cl(grapheSim *g, int* dans_clique_maxR, int* taille_clique_maxR, int
   int nb_sommets = g->nb_sommets;
   
 	if (maxdate != 0) {	
-		if(chrono_clique()  > maxdate) 
+		if(chrono_clique()  > maxdate) {
 			return;
+		}
 	}
 	int i,j;
+
+	// printf("\nR(%d) P(%d) X(%d)\n", *taille_clique_maxR, taille_candidatP, taille_cliqueX);
+	// printf("R : ");
+	// for (i = 0; i < nb_sommets; i++) {
+	// 	printf("%d ", dans_clique_maxR[i]);
+	// }
+	// printf("\nP : ");
+	// for (i = 0; i < nb_sommets; i++) {
+	// 	printf("%d ", candidatP[i]);
+	// }
+	// printf("\nX : ");
+	// for (i = 0; i < nb_sommets; i++) {
+	// 	printf("%d ", dans_cliqueX[i]);
+	// }
 
 	if( taille_candidatP == 0) {
 		if(taille_cliqueX > *taille_clique_maxR) {
@@ -40,7 +55,8 @@ void calcul_cl(grapheSim *g, int* dans_clique_maxR, int* taille_clique_maxR, int
 	for (i = 0 ;  i < nb_sommets ; i ++) {
 		if ( candidatP[i] == 1) {
 			candidatP[i] = 0;
-			dans_cliqueX[i] = 1 ;
+			taille_candidatP--;
+			dans_cliqueX[i] = 1;
 			taille_candidat_temp = taille_candidatP;
 			
 			for (j = 0 ;  j < nb_sommets ; j ++) {
@@ -50,50 +66,43 @@ void calcul_cl(grapheSim *g, int* dans_clique_maxR, int* taille_clique_maxR, int
 					taille_candidat_temp--;	
 				}	
 			}
-			
-			taille_candidat_temp --;
+			//printf("\ntaille P: %d\n", taille_candidat_temp);
 			calcul_cl(g,dans_clique_maxR,taille_clique_maxR,dans_cliqueX,taille_cliqueX + 1,candidat_temp,taille_candidat_temp,maxdate);
 			dans_cliqueX[i] = 0;
 		}	
 	}
 	free(candidat_temp);
 }
+
 int* cliqueMax(grapheSim *g, long timeout) {
 
 	// Initialisation
 	int i;
-	int *candidatP;
-	int *dans_cliqueX;
-  int taille_clique_max;
-	int *dans_clique_maxR;
 
   int taille =g->nb_sommets;
 	
-  taille_clique_max = 0;
+  int taille_clique_max = 0;
 
-  dans_clique_maxR = malloc(taille * sizeof(int));
-	if (!dans_clique_maxR) {
-		fprintf(stderr,"cannot malloc dans_clique_maxR %d\n",taille); exit(41); 
-	}
-  dans_cliqueX = malloc(taille *sizeof(int));
-	if (!dans_cliqueX) {
-		fprintf(stderr,"cannot malloc dans_cliqueX %d\n",taille); exit(42);
-	}
-	candidatP = malloc( taille *sizeof(int));
-	if (!candidatP) {
-		fprintf(stderr,"cannot malloc candidatP %d\n",taille); exit(43);
-	}
+	int *clique_max = allouer(taille * sizeof(int), "clique max (clique.c)");
+  int *X = allouer(taille *sizeof(int), "dans clique X (clique.c)");
+	int *P = allouer( taille *sizeof(int), "candidat P (clique.c)");
 	
 	for (i = 0; i < taille ; i++) {
-		candidatP[i] 	= 1;
-		dans_cliqueX[i]	= 0;
-		dans_clique_maxR[i] = 0;
+		P[i] 	= 1;
+		X[i]	= 0;
+		clique_max[i] = 0;
 	}
+
+	// printMatrice(g->adjacence, g->nb_sommets, g->nb_sommets);
+
+	// printf("\nclique : ");
+	// for (i = 0; i < taille; i++) {
+	// 	printf("%d ", clique_max[i]);
+	// }
 	
-	// 0 taille de la clique initial  et m.nb_atome = nb sommets candidats
-	calcul_cl(g,dans_clique_maxR,&taille_clique_max,dans_cliqueX,0,candidatP,taille,chrono_clique() + timeout);
+	calcul_cl(g,clique_max, &taille_clique_max, X, 0, P, taille, chrono_clique() + timeout);
    
-	free(dans_cliqueX);
-	free(candidatP);
-  return dans_clique_maxR;
+	free(X);
+	free(P);
+  return clique_max;
 }

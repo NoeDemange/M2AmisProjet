@@ -20,7 +20,7 @@ float similarite(grapheCycles g1, grapheCycles g2, int dot_option) {
 
 	if (dot_option) {
     genererFichierDotGP(graphe_produit,sommets, clique, g1.chebi_id, g2.chebi_id);
-  	}
+  }
 
 	int* taille_graphe_commun = grapheCommunG12(g1, g2, sommets, taille, clique);
 

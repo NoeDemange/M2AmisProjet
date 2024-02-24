@@ -7,14 +7,15 @@
 // Définie la taille max du buffer contenant l'id des cycles d'un sommet.
 // En effet, un buffer indexCycles* est défini, dans lequel on indexe l'id des cycles
 // auxquels appartient un sommet i.
-#define SIZE_INDEX 20
+#define TAILLE_INDEX 20
 
-//similarité
+// Similarité
 #define AUCUNE_LIAISON (-1024)
-#define date 50
+#define DATE 50
 
 //#define TEST
 
+// Options
 #define OPTSTR "a:b:n:gh"
 #define USAGE_FMT  "Calcul de similarité des molécules issues de la base données ChEBI par comparaison de leur graphe de cycles.\n\n\
 Usage : [-a chebi_id1 (défaut : vide)] [-b chebi_id2 (défaut : vide)] \
@@ -39,17 +40,12 @@ typedef struct grapheMol {
 typedef struct couple {
 	int id1;
 	int id2;
-}couple;
+} couple;
 
-typedef struct typeArete {
-	int type;
-	int poids;
-}typeArete;
-
-typedef struct sommet {
-  int id;
-  int taille;
-} sommet;
+typedef struct grapheSim {
+  int nb_sommets;
+  int **adjacence;
+} grapheSim;
 
 typedef struct arete {
   int id1;
@@ -57,11 +53,6 @@ typedef struct arete {
   int type;
   int poids;
 } arete;
-
-typedef struct grapheSim {
-  int nb_sommets;
-  int **adjacence;
-} grapheSim;
 
 typedef struct listeAretes {
   arete a;
@@ -78,6 +69,16 @@ typedef struct listeCycles {
   cycle *cycles;
   int nb_cycles;
 } listeCycles;
+
+typedef struct sommet {
+  int id;
+  int taille;
+} sommet;
+
+typedef struct typeArete {
+	int type;
+	int poids;
+} typeArete;
 
 typedef struct grapheCycles {
   int chebi_id;

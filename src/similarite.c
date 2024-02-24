@@ -16,7 +16,7 @@ float similarite(grapheCycles g1, grapheCycles g2, int dot_option) {
 
 	grapheSim *graphe_produit = produitGraphesCycles(g1, g2, sommets, taille);
 
-	int* clique = cliqueMax(graphe_produit, (long)date);
+	int* clique = cliqueMax(graphe_produit, (long)DATE);
 
 	if (dot_option) {
     genererFichierDotGP(graphe_produit,sommets, clique, g1.chebi_id, g2.chebi_id);
@@ -51,7 +51,7 @@ float restrictionTailleCycles(int taille1, int taille2) {
 	return (float)(ABS(taille1 - taille2)) <= 0.2 * MIN(taille1, taille2);
 }
 
-// Construction des couples de cycles compatibles pour 
+// Construit les couples de cycles compatibles pour 
 // déterminer les sommets du graphe produit.
 // La taille (= nombre de sommets) doit être initialisée à O 
 // si on souhaite la déterminer dans la fonction.

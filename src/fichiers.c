@@ -248,7 +248,18 @@ grapheMol lireFichier(char* nom_dossier, char *nom_fichier, int opt) {
   int pos_deb = 0, pos_fin;
   while(!feof(f)) {
     c = fgetc(f);
-    if (c > 'A' && c < 'Z') {
+    if (c == 'H') {
+      c = fgetc(f);
+      if (c == ' ') {
+        printf("[INFO] Attention, atome H encore présent dans ChEBI:%s.\n", nom_fichier);
+      }
+      // Part du principe qu'il n'y a pas de type commençant 
+      // par H suivit de plus d'une lettre
+      else {
+        pos_deb = ftell(f) - 2;
+      }
+    }
+    else if (c > 'A' && c < 'Z') {
       pos_deb = ftell(f) - 1;
     }
     else if (c == ' ') {

@@ -90,7 +90,7 @@ sdf_supplier = Chem.SDMolSupplier(unzipped_file_name)
 output_directory = 'data'
 os.makedirs(output_directory, exist_ok=True)
 
-excluded = ['CHEBI:60153'] # Listes des molécules exclues car posent problèmes
+excluded = []#'CHEBI:60153'] # Listes des molécules exclues car posent problèmes
 
 for mol in sdf_supplier :
 
@@ -103,8 +103,8 @@ for mol in sdf_supplier :
         if ring_info.NumRings() > 0 :
             mol = supprimer_atom_une_liaison(mol)
 
-            if non_connexe(mol):
-                continue 
+            #if non_connexe(mol):
+            #    continue 
 
             transition_matrix = matrice_adjacence_triangulaire(mol)
 

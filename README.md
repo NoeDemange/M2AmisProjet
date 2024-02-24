@@ -7,13 +7,13 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-Ce projet est réalisé dans le cadre de notre M2 Algorithmique et modélisation à l'interface des sciences (AMIS). L'objectif est de comparer des molécules issues d'une base de données par comparaison de leur graphes des cycles.
+Ce projet est réalisé dans le cadre de notre M2 Algorithmique et modélisation à l'interface des sciences (AMIS). L'objectif est de déterminer la similarité des molécules issues d'une base de données en comparant leur graphe de cycles.
 
 ## Rapport et présentation
 
-[latex présentation](https://www.overleaf.com/4279531282ghsdfmdxbmqv#2be995)
+[latex présentation finale](https://www.overleaf.com/4279531282ghsdfmdxbmqv#2be995)
 
-[latex ancienne présentation](https://www.overleaf.com/9936189727ddqhdmmvxmqq#957509)
+[latex première présentation](https://www.overleaf.com/9936189727ddqhdmmvxmqq#957509)
 
 [latex rapport](https://www.overleaf.com/9143591999bkqtcxgnwvfz#696441)
 
@@ -21,27 +21,24 @@ Ce projet est réalisé dans le cadre de notre M2 Algorithmique et modélisation
 
 Ce projet suit une structure de dossier organisée pour une meilleure gestion et maintenabilité. Voici une explication des différents dossiers :
 
-- **bin/** : Contient l'exécutable généré après la compilation du projet.
+- **bin/** : contient l'exécutable généré après la compilation du projet.
 
-- **include/** : Les fichiers d'en-tête (.h) nécessaires pour le projet en C sont placés ici. Ces fichiers définissent les interfaces des fonctions et structures utilisées dans le projet.
+- **include/** : contient les fichiers d'en-tête (.h) du programme C. Ces fichiers définissent les interfaces des fonctions et structures utilisées dans le projet.
 
-- **nauty/** : L'emplacement pour les fichiers de la bibliothèque nauty, qui doit être pré-installée manuellement (cf. la section ci-dessous).
+- **nauty/** : l'emplacement pour les fichiers de la bibliothèque nauty, qui doit être pré-installée manuellement (cf. la section ci-dessous).
 
-- **obj/** : Les fichiers objets (.o) générés lors de la compilation sont stockés ici. Ces fichiers sont les résultats intermédiaires de la compilation des fichiers source.
+- **obj/** : contient les fichiers objets (.o) générés lors de la compilation. 
 
-- **data/** : Ce dossier contient les fichiers de molécules chargé depuis la base de données.
+- **data/** : Ce dossier contient les fichiers de molécules chargés depuis la base de données.
 
-- **src/** : Les fichiers source (.c) pour le projet en C sont placés ici. C'est là que vous écrivez le code principal de votre projet.
-
-- **.gitignore** : Un fichier utilisé pour spécifier les fichiers ou dossiers que Git doit ignorer lors du suivi des modifications. Cela inclut généralement les fichiers objets, l'exécutable et d'autres fichiers générés automatiquement.
+- **src/** : contient les fichiers source (.c) du programme C.
 
 - **Makefile** : Le fichier de configuration pour la construction du projet.
 
-- **script.py** : Script Python pour récupérer des données de la base de données.
+- **script.py** : Script Python pour récupérer les informations des molécules stockée dans le fichier *ChEBI_lite_3star.sdf* sur le site de la base de données ChEBI. Ces informations sont ensuite stockées dans des fichiers individuels dans le dossier **data/**.
 
-Cette structure de dossier organisée aide à maintenir le projet propre et bien organisé.
 
-## Utilisation de la bibliothèque NAUTY pour la numérotation canonique des sommets d'un graphe
+## Téléchargement de la bibliothèque NAUTY pour la numérotation canonique des sommets d'un graphe
 
 Ce programme requiert d'utiliser la bibliothèque nauty, de Brendan McKay and Adolfo Piperno. Elle peut être téléchargée depuis la page web des auteurs (la version 2.8.8 a été utilisée).
 - [page web "nauty and Traces"](https://pallini.di.uniroma1.it/#howtogetit)
@@ -56,63 +53,57 @@ make
 
 Puis il faut déplacer les fichiers `nauty.h` et `nauty.a` dans le dossier de ce dépôt nommé *nauty*.
 
-## Compilation
+## Utilisation
+
+### Compilation
 
 Pour compiler le projet utilisez :
 ```sh
 make
 ```
+### Chargement des données
 
-## Utilisation
-
-Pour charger les molécules depuis la base de données Chebi.
+Pour charger les molécules depuis la base de données ChEBI :
 ```sh
 make data
 ```
 
-<!--### Démo
-Pour lancer une démo sur le substrat adénosine :
-```sh
-make demo
-```-->
-
 ### Exécution
-Pour exécuter le programme entrez :
+Pour lancer la comparaison entre toutes les molécules de la base de données, entrez :
+```sh
+./similarite
+```
+Les options suivantes sont également disponibles :
 ```sh
 ./similarite [-a chebi_id1 (défaut : vide)] [-b chebi_id2 (défaut : vide)] [-n nb_fichiers (défaut : tous)] [-g (défaut : non)] [-h (usage)]
 ```
-Les paramètres par défauts font permettent de faire la comparaison entre toutes les molécules extraitent de la base de données. Les paramètres `-a` et `-b` servent à renseigner l'id des deux molécules à comparer. Si `-a` est utilisé seul, la molécule sera comparée à toutes les autres. `-n` permet de limiter le nombre de comparaisons, et peut-être utilisé avec `-a`. Enfin `-g` permet d'obtenir des fichiers DOT pour visualiser les graphes de cycles des molécules avec `-a` et `-b`. Pour convertir les fichiers en image .png, entrez la commande suivante après la fin du programme :
+
+Les options `-a` et `-b` servent à renseigner l'id des deux molécules à comparer. Si `-a` est utilisé seul, la molécule sera comparée à toutes les autres. 
+
+L'option `-n` permet de limiter le nombre de comparaisons, et peut-être utilisé avec `-a`. 
+
+L'option `-g` permet d'obtenir des fichiers DOT pour visualiser les graphes de cycles des molécules lorsque combinée à `-a` et `-b`. Pour convertir les fichiers en image .png, entrez la commande suivante après la fin du programme :
 
 ```sh
 make png
 ```
-<!--
-Puis les paramètres alpha et sizemax peuvent être aussi modifiés.
-Alpha est utilisé pour la génération d'une enveloppe concave et sizemax correspond au nombre d'atomes maximum que l'on veut dans un chemin qu'on génère.
 
-alpha (défaut 3) : -a [double]
+### Résultats
 
-sizemax (défaut 5) : -s [entier]
-```
-Pour avoir de l'aide : 
- ```sh
--h
-```
+Les résultats sont présentés dans le fichier *matRes.csv* lorsque la comparaison est lancée sur plusieurs molécules. Quand seulement deux molécules sont comparées, le coefficient de similarité s'affiche dans la console. 
+
+Avec les options `-a`, `-b` et `-g`, les fichiers DOT des graphes moléculaires réduits, des graphes de cycles et du graphe produit sont générés et stockés dans le dossier **graphs/**.
 
 ### Nettoyage des fichiers
 
-Pour supprimer l'éxécutable et les fichiers objets :
+Pour supprimer l'éxécutable, les fichiers objets et les résultats :
 ```sh
 make clean
 ```
-Pour supprimer en plus les résultats : 
+Pour supprimer en plus les fichiers de molécules : 
 ```sh
 make mrproper
 ```
-
-### Visualisation
-
-Pour visualiser les résultats vous pouvez utiliser Pymol ou tout autres logiciels de visualisation moléculaire. -->
 
 ## Auteurs
 

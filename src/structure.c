@@ -228,9 +228,9 @@ indexCycles* initIndexCycles(int taille) {
   int i, j;
 
   for (i = 0; i < taille; i++) {
-    index_cycles[i].cycles = allouer(SIZE_INDEX * sizeof(int), "sous-tableau de cycles de l'index de cycles (structure.c)");
+    index_cycles[i].cycles = allouer(TAILLE_INDEX * sizeof(int), "sous-tableau de cycles de l'index de cycles (structure.c)");
 
-    for (j = 0; j < SIZE_INDEX; j++) {
+    for (j = 0; j < TAILLE_INDEX; j++) {
       index_cycles[i].cycles[j] = -1;
     }
   }
@@ -243,7 +243,7 @@ void resetIndexCycles(indexCycles *index_cycles, int taille) {
   int i, j;
   for (i = 0; i < taille; i++) {
     j = 0;
-    while (j < SIZE_INDEX && index_cycles[i].cycles[j] != -1) {
+    while (j < TAILLE_INDEX && index_cycles[i].cycles[j] != -1) {
       index_cycles[i].cycles[j] = -1;
       j++;
     }
@@ -259,11 +259,11 @@ void ajouterCycleDansIndex(indexCycles *index_cycles, int id_sommet, int id_cycl
   }
 
   int i = 0;
-  while (i < SIZE_INDEX && index_cycles[id_sommet].cycles[i] != -1) {
+  while (i < TAILLE_INDEX && index_cycles[id_sommet].cycles[i] != -1) {
     i++;
   }
-  if (i == SIZE_INDEX) {
-    printf("Erreur interne : taille de buffer SIZE_INDEX est trop petite.\n");
+  if (i == TAILLE_INDEX) {
+    printf("Erreur interne : taille de buffer TAILLE_INDEX est trop petite.\n");
     exit(EXIT_FAILURE);
   }
   else {
@@ -290,7 +290,7 @@ void printIndexCycles(indexCycles *index_cycles, int taille) {
   for (i = 0; i < taille; i++) {
     printf("%d :", i);
     j = 0;
-    while (j < SIZE_INDEX && index_cycles[i].cycles[j] /*!= -1*/) {
+    while (j < TAILLE_INDEX && index_cycles[i].cycles[j] /*!= -1*/) {
       printf(" %d", index_cycles[i].cycles[j]);
       j++;
     }

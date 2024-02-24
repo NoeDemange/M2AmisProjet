@@ -82,6 +82,7 @@ int main(int argc, char** argv) {
 
     sec = fin - debut;
     tempsExecution(sec, "Temps d'exécution");
+    #endif
     
     return EXIT_SUCCESS;
 }

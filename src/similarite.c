@@ -63,7 +63,7 @@ couple* couplesCyclesCompatibles(grapheCycles g1, grapheCycles g2, int *taille) 
 
 	for(i= 0; i < g1.nb_sommets; i++) {
 		for(j= 0; j < g2.nb_sommets; j++) {
-			if(restrictionTailleCycles(g1.sommets[i].taille, g2.sommets[j].taille)) {
+			if(g1.sommets[i].taille == g2.sommets[j].taille){//restrictionTailleCycles(g1.sommets[i].taille, g2.sommets[j].taille)) {
 				(*taille)++;
 			}
 		}
@@ -76,7 +76,7 @@ couple* couplesCyclesCompatibles(grapheCycles g1, grapheCycles g2, int *taille) 
 	n = 0;
 	for (i = 0; i < g1.nb_sommets; i++) { 
 		for (j = 0; j < g2.nb_sommets; j++) {
-			if(restrictionTailleCycles(g1.sommets[i].taille, g2.sommets[j].taille)) {
+			if(g1.sommets[i].taille == g2.sommets[j].taille){//restrictionTailleCycles(g1.sommets[i].taille, g2.sommets[j].taille)) {
 				couples[n].id1 = i;
 				couples[n].id2 = j;
 				n++;

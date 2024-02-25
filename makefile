@@ -56,14 +56,16 @@ mrproper: clean
 png: $(PNG_FILES) #need graphviz
 
 $(PNG_FILES): graphs/%.png: graphs/%.dot
+# neato -Gstart=20 -Tpng $< -o $@
 	dot -Tpng $< -o $@
+
 
 LADIR=M2AmisProjet_GroupeB
 zip:
 	rm -rf ${LADIR}
 	mkdir ${LADIR}
 	cp -r $(SRCDIR) $(LADIR)
-	cp -r include $(LADIR)
+	cp -r inclumakede $(LADIR)
 	cp makefile ${LADIR}
 	cp nauty/A_lire.txt ${LADIR}
 	cp README.md $(LADIR)

@@ -9,42 +9,29 @@ long chrono_clique() {
 	return date_courante;
 }
 
-// Calcul récursif de la clique max
-void calcul_cl(grapheSim *g, int* dans_clique_maxR, int* taille_clique_maxR, int *dans_cliqueX,int taille_cliqueX,int *candidatP,int taille_candidatP, long maxdate) {	
+// Détermine récursivement une clique max de g.
+// Adapté de l'algorithme de Bron-Kerbosch.
+void calculCliqueMax(grapheSim *g, int* dans_clique_max, int* taille_clique_max, int *dans_clique,int taille_clique,int *candidat,int taille_candidat, long date_max) {	
 	
   int nb_sommets = g->nb_sommets;
   
-	if (maxdate != 0) {	
-		if(chrono_clique()  > maxdate) {
+	if (date_max != 0) {	
+		if(chrono_clique()  > date_max) {
 			return;
 		}
 	}
 	int i,j;
 
-	// printf("\nR(%d) P(%d) X(%d)\n", *taille_clique_maxR, taille_candidatP, taille_cliqueX);
-	// printf("R : ");
-	// for (i = 0; i < nb_sommets; i++) {
-	// 	printf("%d ", dans_clique_maxR[i]);
-	// }
-	// printf("\nP : ");
-	// for (i = 0; i < nb_sommets; i++) {
-	// 	printf("%d ", candidatP[i]);
-	// }
-	// printf("\nX : ");
-	// for (i = 0; i < nb_sommets; i++) {
-	// 	printf("%d ", dans_cliqueX[i]);
-	// }
-
-	if( taille_candidatP == 0) {
-		if(taille_cliqueX > *taille_clique_maxR) {
-			*taille_clique_maxR = taille_cliqueX;
+	if( taille_candidat == 0) {
+		if(taille_clique > *taille_clique_max) {
+			*taille_clique_max = taille_clique;
 			for (i = 0 ;  i < nb_sommets ; i ++) {
-				dans_clique_maxR[i] = dans_cliqueX[i];
+				dans_clique_max[i] = dans_clique[i];
 			}
 		}
 		return;
 	}
-	if (taille_candidatP + taille_cliqueX <= *taille_clique_maxR) {
+	if (taille_candidat + taille_clique <= *taille_clique_max) {
 		return;
 	}
 	
@@ -53,22 +40,21 @@ void calcul_cl(grapheSim *g, int* dans_clique_maxR, int* taille_clique_maxR, int
 	candidat_temp = malloc(nb_sommets * sizeof(int));
 
 	for (i = 0 ;  i < nb_sommets ; i ++) {
-		if ( candidatP[i] == 1) {
-			candidatP[i] = 0;
-			taille_candidatP--;
-			dans_cliqueX[i] = 1;
-			taille_candidat_temp = taille_candidatP;
+		if ( candidat[i] == 1) {
+			candidat[i] = 0;
+			taille_candidat--;
+			dans_clique[i] = 1;
+			taille_candidat_temp = taille_candidat;
 			
 			for (j = 0 ;  j < nb_sommets ; j ++) {
-				candidat_temp[j] = candidatP[j]; 
-				if ((candidatP[j] == 1) && (g->adjacence[i][j] == 0)) {
+				candidat_temp[j] = candidat[j]; 
+				if ((candidat[j] == 1) && (g->adjacence[i][j] == 0)) {
 					candidat_temp[j] = 0;
 					taille_candidat_temp--;	
 				}	
 			}
-			//printf("\ntaille P: %d\n", taille_candidat_temp);
-			calcul_cl(g,dans_clique_maxR,taille_clique_maxR,dans_cliqueX,taille_cliqueX + 1,candidat_temp,taille_candidat_temp,maxdate);
-			dans_cliqueX[i] = 0;
+			calculCliqueMax(g,dans_clique_max,taille_clique_max,dans_clique,taille_clique + 1,candidat_temp,taille_candidat_temp,date_max);
+			dans_clique[i] = 0;
 		}	
 	}
 	free(candidat_temp);
@@ -76,11 +62,8 @@ void calcul_cl(grapheSim *g, int* dans_clique_maxR, int* taille_clique_maxR, int
 
 int* cliqueMax(grapheSim *g, long timeout) {
 
-	// Initialisation
 	int i;
-
   int taille =g->nb_sommets;
-	
   int taille_clique_max = 0;
 
 	int *clique_max = allouer(taille * sizeof(int), "clique max (clique.c)");
@@ -92,15 +75,8 @@ int* cliqueMax(grapheSim *g, long timeout) {
 		X[i]	= 0;
 		clique_max[i] = 0;
 	}
-
-	// printMatrice(g->adjacence, g->nb_sommets, g->nb_sommets);
-
-	// printf("\nclique : ");
-	// for (i = 0; i < taille; i++) {
-	// 	printf("%d ", clique_max[i]);
-	// }
 	
-	calcul_cl(g,clique_max, &taille_clique_max, X, 0, P, taille, chrono_clique() + timeout);
+	calculCliqueMax(g, clique_max, &taille_clique_max, X, 0, P, taille, chrono_clique() + timeout);
    
 	free(X);
 	free(P);

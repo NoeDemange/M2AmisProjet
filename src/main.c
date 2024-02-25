@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     struct stat  file_stat; 
 
     if (stat("data", &file_stat) < 0) {
-        printf("[data] Pas de fichiers trouvés. Saisissez : make data\n");
+        printf("[ERREUR] Pas de fichiers trouvés. Saisissez : make data\n");
         exit(0);
     }
 
@@ -82,7 +82,6 @@ int main(int argc, char** argv) {
 
     sec = fin - debut;
     tempsExecution(sec, "Temps d'exécution");
-    #endif
     
     return EXIT_SUCCESS;
 }

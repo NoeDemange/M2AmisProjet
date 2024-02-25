@@ -65,7 +65,7 @@ zip:
 	rm -rf ${LADIR}
 	mkdir ${LADIR}
 	cp -r $(SRCDIR) $(LADIR)
-	cp -r inclumakede $(LADIR)
+	cp -r include $(LADIR)
 	cp makefile ${LADIR}
 	cp nauty/A_lire.txt ${LADIR}
 	cp README.md $(LADIR)

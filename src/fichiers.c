@@ -5,6 +5,9 @@ void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_opt
   grapheMol graphe_mol = lireFichier(nom_dossier, chebi_id, 1);
   grapheMol graphe_mol1 = lireFichier(nom_dossier, chebi_id1, 1);
 
+  genererFichierDotGM(&graphe_mol);
+  genererFichierDotGM(&graphe_mol1);
+
   indexCycles *index_cycles = initIndexCycles(MAX(graphe_mol.nb_sommets,
                                                   graphe_mol1.nb_sommets));
 
@@ -24,6 +27,8 @@ void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_opt
 
   float sim = similarite(graphe_cycles,graphe_cycles1,dot_option);
   float lev = distLevenshteinNormalise(graphe_cycles, graphe_cycles1, NULL);
+  printf("Levenshtein normalisée : %f\n", lev);
+  printf("MICIS : %f\n", sim);
   printf("Similarité : %f\n", sim * lev);
   
   freeGrapheCycles(graphe_cycles);
@@ -174,7 +179,7 @@ listeFichiers* lireDossier(char *nom_dossier, int max_fichiers, int *max_sommets
     }
     closedir(d);
   }
-  printf("Nombre de fichiers dans %s : %d\n", nom_dossier, (*iter));
+  printf("Nombre de fichiers sélectionnés : %d\n", (*iter));
   return fichiers;
 }
 

@@ -17,6 +17,7 @@ SRC:=$(wildcard $(SRCDIR)/*.c)
 OBJ:=$(SRC:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 DOT_FILES := $(wildcard graphs/*.dot)
 PNG_FILES := $(patsubst %.dot,%.png,$(DOT_FILES))
+SVG_FILES := $(patsubst %.dot,%.svg,$(DOT_FILES))
 
 all: $(EXEC)
 	ln -sf ./$(BINDIR)/$(TARGET) ./similarite
@@ -54,11 +55,18 @@ mrproper: clean
 	rm -rf data
 
 png: $(PNG_FILES) #need graphviz
-
-$(PNG_FILES): graphs/%.png: graphs/%.dot
-# neato -Gstart=20 -Tpng $< -o $@
+$(PNG_FILES): graphs/%.png: graphs/%.dot 
+#	neato -Gstart=5 -Tpng $< -o $@ 
 	dot -Tpng $< -o $@
 
+svg : $(SVG_FILES)
+$(SVG_FILES): graphs/%.svg: graphs/%.dot 
+#	neato -Gstart=5 -Tsvg $< -o $@ 
+	dot -Tsvg $< -o $@
+
+cleang :
+	rm -f graphs/*.png
+	rm -f graphs/*.svg
 
 LADIR=M2AmisProjet_GroupeB
 zip:

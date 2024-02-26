@@ -11,7 +11,7 @@ long chrono_clique() {
 
 // Détermine récursivement une clique max de g.
 // Adapté de l'algorithme de Bron-Kerbosch.
-void calculCliqueMax(grapheSim *g, int* dans_clique_max, int* taille_clique_max, int *dans_clique,int taille_clique,int *candidat,int taille_candidat, long date_max) {	
+void calculCliqueMax(grapheSim *g, int* dans_clique_max, int* taille_clique_max, int *dans_clique, int taille_clique, int *candidat, int taille_candidat, long date_max) {	
 	
   int nb_sommets = g->nb_sommets;
   
@@ -53,7 +53,7 @@ void calculCliqueMax(grapheSim *g, int* dans_clique_max, int* taille_clique_max,
 					taille_candidat_temp--;	
 				}	
 			}
-			calculCliqueMax(g,dans_clique_max,taille_clique_max,dans_clique,taille_clique + 1,candidat_temp,taille_candidat_temp,date_max);
+			calculCliqueMax(g,dans_clique_max, taille_clique_max, dans_clique, taille_clique + 1, candidat_temp, taille_candidat_temp, date_max);
 			dans_clique[i] = 0;
 		}	
 	}

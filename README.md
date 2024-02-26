@@ -82,11 +82,8 @@ Les options `-a` et `-b` servent à renseigner l'id des deux molécules à compa
 
 L'option `-n` permet de limiter le nombre de comparaisons, et peut-être utilisé avec `-a`. 
 
-L'option `-g` permet d'obtenir des fichiers DOT pour visualiser les graphes de cycles des molécules lorsque combinée à `-a` et `-b`. Pour convertir les fichiers en image .png, entrez la commande suivante après la fin du programme :
+L'option `-g` permet d'obtenir des fichiers DOT pour visualiser les graphes de cycles des molécules lorsque combinée à `-a` et `-b`. Pour convertir les fichiers en image .png, entrez la commande `make png`. Vous pouvez également les convertir en image vectorielle avec `make svg`.
 
-```sh
-make png
-```
 
 ### Résultats
 
@@ -96,11 +93,11 @@ Avec les options `-a`, `-b` et `-g`, les fichiers DOT des graphes moléculaires 
 
 ### Nettoyage des fichiers
 
-Pour supprimer l'éxécutable, les fichiers objets et les résultats :
+Pour supprimer l'éxécutable, les fichiers objets et les fichiers DOT :
 ```sh
 make clean
 ```
-Pour supprimer en plus les fichiers de molécules : 
+Pour supprimer en plus les fichiers de molécules et le fichier de résultats : 
 ```sh
 make mrproper
 ```

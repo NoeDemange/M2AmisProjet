@@ -18,6 +18,8 @@ float similarite(grapheCycles g1, grapheCycles g2, int dot_option) {
 
 	int* clique = cliqueMax(graphe_produit, (long)DATE);
 
+	//printMatrice(graphe_produit->adjacence, taille, taille);
+
 	if (dot_option) {
     genererFichierDotGP(graphe_produit,sommets, clique, g1.chebi_id, g2.chebi_id);
   }
@@ -46,6 +48,8 @@ float similarite(grapheCycles g1, grapheCycles g2, int dot_option) {
 	return sim;
 }
 
+// Accepte une différence d'1 sommet pour les cycles à au moins 5 sommets.
+// Pas utilisée dans cette version.
 float restrictionTailleCycles(int taille1, int taille2) {
 
 	return (float)(ABS(taille1 - taille2)) <= 0.2 * MIN(taille1, taille2);
@@ -61,9 +65,9 @@ couple* couplesCyclesCompatibles(grapheCycles g1, grapheCycles g2, int *taille) 
 	int n;
 	*taille = 0;
 
-	for(i= 0; i < g1.nb_sommets; i++) {
-		for(j= 0; j < g2.nb_sommets; j++) {
-			if(g1.sommets[i].taille == g2.sommets[j].taille){//restrictionTailleCycles(g1.sommets[i].taille, g2.sommets[j].taille)) {
+	for (i= 0; i < g1.nb_sommets; i++) {
+		for (j= 0; j < g2.nb_sommets; j++) {
+			if (g1.sommets[i].taille == g2.sommets[j].taille) {
 				(*taille)++;
 			}
 		}
@@ -76,7 +80,7 @@ couple* couplesCyclesCompatibles(grapheCycles g1, grapheCycles g2, int *taille) 
 	n = 0;
 	for (i = 0; i < g1.nb_sommets; i++) { 
 		for (j = 0; j < g2.nb_sommets; j++) {
-			if(g1.sommets[i].taille == g2.sommets[j].taille){//restrictionTailleCycles(g1.sommets[i].taille, g2.sommets[j].taille)) {
+			if (g1.sommets[i].taille == g2.sommets[j].taille) {
 				couples[n].id1 = i;
 				couples[n].id2 = j;
 				n++;
@@ -92,7 +96,7 @@ grapheSim* produitGraphesCycles(grapheCycles g1, grapheCycles g2, couple *sommet
 	int i1, i2, j1, j2;
 
   int** adjacence =  allouer(taille * sizeof(int*), "matrice d'adjacence du graphe produit (similarite.c)");	
-	for(i = 0; i < taille; i++) {
+	for (i = 0; i < taille; i++) {
 		adjacence[i] =  callouer(taille, sizeof(int), "matrice d'adjacence du graphe produit (similarite.c)");
 	}
 
@@ -144,6 +148,7 @@ int*  grapheCommunG12(grapheCycles g1, grapheCycles g2, couple *sommets, int tai
 		if (tab[i] == 1) {
 			for (j = i + 1; j < taille ; j++) {
 				if (tab[j] == 1 && (sommets[i].id1 == sommets[j].id1)) {
+					printf("different de clique max\n");
 					tab[j] = 0;
 				}
 			}

@@ -9,3 +9,4 @@ nauty/nauty.a
 graphs/*
 similarite
 *.csv
+figures/*

@@ -19,7 +19,7 @@ Ce projet est réalisé dans le cadre de notre M2 Algorithmique et modélisation
     5. [Nettoyage des fichiers](#clean)
 3. [Structure du projet](#structure)
 4. [Auteurs](#Auteurs)
-5. [Encadrants](Encadrants)
+5. [Encadrants](#Encadrants)
 
 ## Téléchargement de la bibliothèque NAUTY pour la numérotation canonique des sommets d'un graphe <a name="nauty"></a>
 

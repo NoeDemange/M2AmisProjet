@@ -28,7 +28,7 @@ void comparaison(char *nom_dossier, char *chebi_id, char *chebi_id1, int dot_opt
   float sim = similarite(graphe_cycles,graphe_cycles1,dot_option);
   float lev = distLevenshteinNormalise(graphe_cycles, graphe_cycles1, NULL);
   printf("Levenshtein normalisée : %f\n", lev);
-  printf("MICIS : %f\n", sim);
+  printf("MCIS : %f\n", sim);
   printf("Similarité : %f\n", sim * lev);
   
   freeGrapheCycles(graphe_cycles);

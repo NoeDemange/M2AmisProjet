@@ -53,6 +53,7 @@ clean:
 
 mrproper: clean
 	rm -rf data
+	rm matRes.csv
 
 png: $(PNG_FILES) #need graphviz
 $(PNG_FILES): graphs/%.png: graphs/%.dot 

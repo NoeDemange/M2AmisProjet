@@ -76,10 +76,11 @@ zip:
 	cp -r $(SRCDIR) $(LADIR)
 	cp -r include $(LADIR)
 	cp makefile ${LADIR}
-	cp nauty/A_lire.txt ${LADIR}
+	mkdir ${LADIR}/nauty
+	cp nauty/A_lire.txt ${LADIR}/nauty/A_lire.txt
 	cp README.md $(LADIR)
 	cp chebi_molecule_loader.py ${LADIR}
-#	cp Compte_Rendu.pdf ${LADIR}
+	cp M2Projet_Rapport_GroupeB.pdf ${LADIR}
 	rm -f ${LADIR}.zip
 	zip -r ${LADIR}.zip ${LADIR}
 	rm -rf ${LADIR}

@@ -30,7 +30,7 @@ Ce programme requiert d'utiliser la bibliothèque nauty, de Brendan McKay and Ad
 Une fois la bibliothèque téléchargée, il faut lancer les commandes suivantes, à la racine du dossier contenant la bibliothèque (ie. le dossier *nautyx_x_x*) :
 
 ```
-./confige
+./configure
 make
 ```
 

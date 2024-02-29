@@ -8,7 +8,7 @@ listeCycles* baseDeCyclesMinimale(grapheMol g) {
     int *parents = allouer(g.nb_sommets * sizeof(int), "parents des sommets dans le parcours (Horton.c)");
 
     for (i = 0; i < g.nb_sommets; i++) {
-        parcoursEnLargueur(g, cycles, i, parents);
+        parcoursEnLargeur(g, cycles, i, parents);
     }
     free(parents);
     triFusion(cycles->cycles, cycles->nb_cycles);

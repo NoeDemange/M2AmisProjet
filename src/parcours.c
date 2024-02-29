@@ -1,6 +1,6 @@
 #include "parcours.h"
 
-void parcoursEnLargueur(grapheMol g, listeCycles *cycles, int i, int *parents) {
+void parcoursEnLargeur(grapheMol g, listeCycles *cycles, int i, int *parents) {
     
     int j, id1, id2;
     element tete;

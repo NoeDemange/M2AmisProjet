@@ -78,6 +78,7 @@ zip:
 	cp makefile ${LADIR}
 	cp nauty/A_lire.txt ${LADIR}
 	cp README.md $(LADIR)
+	cp chebi_molecule_loader.py ${LADIR}
 #	cp Compte_Rendu.pdf ${LADIR}
 	rm -f ${LADIR}.zip
 	zip -r ${LADIR}.zip ${LADIR}
